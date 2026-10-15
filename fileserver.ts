@@ -1,15 +1,5 @@
-import { unescape } from "jsr:@std/internal@^1.0.14/diff-str";
 import sanitizeFileName from "sanitize-filename"
-import { fileTypeFromFile, fileTypeFromBuffer, FileTypeResult } from "file-type"
-import { dir, time } from "node:console";
-
-// AI SECURITY REVIEW
-// 3. File Overwrite (Data Loss / Tampering)
-// Severity: Medium
-// If User A uploads an image named avatar.png, and User B uploads an image also named avatar.png,
-// User B's file will overwrite User A's file. An attacker could intentionally upload malicious/inappropriate
-// images using common names (like profile.jpg, image.png) to overwrite legitimate user files on your server.
-// The Fix: Always generate unique identifiers for file uploads. You can prepend a UUID or a timestamp to the sanitized file name.
+import { fileTypeFromBuffer, FileTypeResult } from "file-type"
 
 // 4. Polyglot Files / XSS (Future Risk)
 // Severity: Medium
@@ -18,51 +8,42 @@ import { dir, time } from "node:console";
 // If you later serve these files directly from your server and a browser accesses them, the browser might get confused and execute the JavaScript, resulting in Cross-Site Scripting (XSS).
 // The Fix: When you build the route to serve these files, ensure you strictly enforce the Content-Type header and always include X-Content-Type-Options: nosniff.
 
-// global constants
-const saveDirectory = "./saved";
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-
-
-
-// const now = Date.now();
-// console.log(`now ${now}`)
-// setTimeout(() => {
-//     const newnow = Date.now();
-//     console.log(`newnow ${newnow}`)
-//
-//     console.log(`difference: ${newnow - now }`)
-// }, 1000)
-
-
-// setInterval
-const REFRESH_RATE = 2;
-const MAX_REQUESTS = 10;
-const FILE_SERVER_PASSWORD = Deno.env.get("FILE_SERVER_PASWORD");
-
-if(FILE_SERVER_PASSWORD === undefined) {
-    throw new Error(`Password not set in .env. Set it as FILE_SERVER_PASWORD="<password>"`)
-}
-
+// interfaces for now
 interface Bucket {
     tokens: number;
     last: number;
 }
 
+// global constants
+const saveDirectory = "./saved";
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const REFRESH_RATE = 2;
+const MAX_REQUESTS = 10;
+const FILE_SERVER_PASSWORD = Deno.env.get("FILE_SERVER_PASWORD");
 const buckets = new Map<string, Bucket>;
 
+init();
 
-const cleanBucketMemory = setInterval(() => {
-    const cutoff = Date.now() - (REFRESH_RATE * 1000) * MAX_REQUESTS;
-    for(const [ip, bucket] of buckets) {
-        if(bucket.last <= cutoff) {
-            buckets.delete(ip);
-        }
+function init() {
+    if(FILE_SERVER_PASSWORD === undefined) {
+        throw new Error(`Password not set in .env. Set it as FILE_SERVER_PASWORD="<password>"`)
     }
 
-}, 30_000)
-Deno.unrefTimer(cleanBucketMemory);
+    const cleanBucketMemory = setInterval(() => {
+        const cutoff = Date.now() - (REFRESH_RATE * 1000) * MAX_REQUESTS;
+        for(const [ip, bucket] of buckets) {
+            if(bucket.last <= cutoff) {
+                buckets.delete(ip);
+            }
+        }
 
-console.log(30_000)
+    }, 30_000)
+    Deno.unrefTimer(cleanBucketMemory);
+
+    if (import.meta.main) {
+        Deno.serve(fileHandler);
+    }
+}
 
 // im not proud of this function but i couldn't focus idk
 // heavy inspiration and better code: https://docs.deno.com/examples/http_server_rate_limit/
@@ -139,9 +120,6 @@ function firstLetterToLowerCase(string:string) {
     return "";
 }
 
-if (import.meta.main) {
-    Deno.serve(fileHandler);
-}
 
 export async function fileHandler(req: Request, info: Deno.ServeHandlerInfo): Promise<Response> {
     const clientNetAddr = info.remoteAddr as Deno.NetAddr
@@ -174,7 +152,7 @@ export async function fileHandler(req: Request, info: Deno.ServeHandlerInfo): Pr
     // A BUNCH OF GUARD CLAUSES COZ IM IN LOVE
     const formData: FormData = await req.formData();
 
-    if(formData.get("password") !== "vind") {
+    if(formData.get("password") !== FILE_SERVER_PASSWORD) {
         return new Response("NO!",  { status: 401 })
     }
     const file: File | null = formData?.get("file") as File;
