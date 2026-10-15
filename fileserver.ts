@@ -23,8 +23,12 @@ const saveDirectory = "./saved";
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 function firstLetterToLowerCase(string:string) {
-    return string[0].toLocaleLowerCase() + string.slice(1,string.length)
+    if(string.length > 0) {
+        return string[0].toLocaleLowerCase() + string.slice(1,string.length)
+    }
+    return "";
 }
+
 if (import.meta.main) {
     Deno.serve(fileHandler);
 }
