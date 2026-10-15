@@ -1,14 +1,15 @@
 {
   "tasks": {
-    "http": "deno run --allow-write --allow-read --allow-net --allow-env fileserver.ts",
+    "http": "deno run --allow-write --allow-read --allow-net --allow-env --env-file fileserver.ts",
     "fileviewer": "deno run --allow-write --allow-read --allow-net --allow-env fileviewer.ts",
     "testperms": "deno test --allow-write --allow-read --allow-net --allow-env"
 
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19",
-    "file-type": "npm:file-type@^22.1.1",
+    "file-type": "npm:file-type@^22.2.0",
     "sanitize-filename": "npm:sanitize-filename@^1.6.4",
-    "std": "npm:std@^0.1.40"
+    "std": "npm:std@^0.1.40",
+    "time": "npm:time@^0.12.0"
   }
 }

@@ -1,7 +1,7 @@
 import { unescape } from "jsr:@std/internal@^1.0.14/diff-str";
 import sanitizeFileName from "sanitize-filename"
 import { fileTypeFromFile, fileTypeFromBuffer, FileTypeResult } from "file-type"
-import { dir } from "node:console";
+import { dir, time } from "node:console";
 
 // AI SECURITY REVIEW
 // 3. File Overwrite (Data Loss / Tampering)
@@ -22,6 +22,116 @@ import { dir } from "node:console";
 const saveDirectory = "./saved";
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
+
+
+// const now = Date.now();
+// console.log(`now ${now}`)
+// setTimeout(() => {
+//     const newnow = Date.now();
+//     console.log(`newnow ${newnow}`)
+//
+//     console.log(`difference: ${newnow - now }`)
+// }, 1000)
+
+
+// setInterval
+const REFRESH_RATE = 2;
+const MAX_REQUESTS = 10;
+const FILE_SERVER_PASSWORD = Deno.env.get("FILE_SERVER_PASWORD");
+
+if(FILE_SERVER_PASSWORD === undefined) {
+    throw new Error(`Password not set in .env. Set it as FILE_SERVER_PASWORD="<password>"`)
+}
+
+interface Bucket {
+    tokens: number;
+    last: number;
+}
+
+const buckets = new Map<string, Bucket>;
+
+
+const cleanBucketMemory = setInterval(() => {
+    const cutoff = Date.now() - (REFRESH_RATE * 1000) * MAX_REQUESTS;
+    for(const [ip, bucket] of buckets) {
+        if(bucket.last <= cutoff) {
+            buckets.delete(ip);
+        }
+    }
+
+}, 30_000)
+Deno.unrefTimer(cleanBucketMemory);
+
+console.log(30_000)
+
+// im not proud of this function but i couldn't focus idk
+// heavy inspiration and better code: https://docs.deno.com/examples/http_server_rate_limit/
+// i just wanted to write my own for fun
+// TODO refactor to use min + have more early returns
+function take(ip: string) {
+    const now = Date.now();
+    const bucket = buckets.get(ip) ?? { tokens: MAX_REQUESTS, last: now }
+    buckets.set(ip, bucket);
+    // console.log("CURRENT TOKENS AT CALL: " + bucket.tokens)
+
+    const timeElapsed = now - bucket.last;
+    const newRequests = Math.floor((timeElapsed / REFRESH_RATE) / 1000)
+    // const newRequests = Math.floor(timeElapsed/1000 % REFRESH_RATE * 1000);
+    // console.log(`Time elapsed: ${timeElapsed}\n newRequests:${newRequests}`)
+
+    // Math.min(MAX_REQUESTS, bucket.tokens + newRequests)
+    // ^ something like this is genius
+
+    // i dont really need this if i have an interval to remove buckets tbh
+    if(newRequests >= MAX_REQUESTS) {
+        // console.log("newrequests >= max, setting requests to 5")
+        bucket.tokens = MAX_REQUESTS - 1; // spend one request
+        bucket.last = now;
+        return true;
+    }
+
+    if(bucket.tokens > 0) {
+        bucket.tokens += newRequests - 1; // spend one request
+        bucket.last = now;
+        // console.log("Used one token!" + bucket.tokens)
+        return true;
+    }
+
+    bucket.last = now; // cruel but deserved for spam
+    return false;
+}
+
+// Deno.serve((req, info) => {
+//     info.remoteAddr.
+// })
+// Deno.serve(takeHandler);
+
+function takeHandler(req: Request) {
+    if(req.method !== "POST" ) {
+        const responseOptions: ResponseInit = {
+            headers: {
+                "Content-Type": "text/html",
+            }
+        }
+
+        const inputForm = `
+            <form method="POST" enctype="multipart/form-data">
+                <input name="password" type="text"/>
+                <button type="submit">Upload</button>
+            </form>
+        `;
+        // return new Response("Waiting for your file, king", responseOptions);
+        return new Response(inputForm, responseOptions);
+        // return new Response("NOT A POST",  {status: 405})
+    }
+    if(take("Vind")) {
+        return new Response("YE",  {status: 200})
+    } else {
+        return new Response("NUH",  {status: 400})
+    }
+}
+
+
 function firstLetterToLowerCase(string:string) {
     if(string.length > 0) {
         return string[0].toLocaleLowerCase() + string.slice(1,string.length)
@@ -33,21 +143,29 @@ if (import.meta.main) {
     Deno.serve(fileHandler);
 }
 
-export async function fileHandler(req: Request): Promise<Response> {
+export async function fileHandler(req: Request, info: Deno.ServeHandlerInfo): Promise<Response> {
+    const clientNetAddr = info.remoteAddr as Deno.NetAddr
+    const clientIp = clientNetAddr.hostname;
+    console.log(`${clientIp} connected`);
+
+    if(!take(clientIp)) {
+        return new Response("Too many requests", { status: 429 })
+    }
+
     if(req.method !== "POST" ) {
         const responseOptions: ResponseInit = {
             headers: {
-                "Content-Type": "text/html"
+                "Content-Type": "text/html",
             }
         }
 
         const inputForm = `
             <form method="POST" enctype="multipart/form-data">
                 <input name="file" type="file" />
+                <input name="password" type="password"/>
                 <button type="submit">Upload</button>
             </form>
         `;
-
         // return new Response("Waiting for your file, king", responseOptions);
         return new Response(inputForm, responseOptions);
         // return new Response("NOT A POST",  {status: 405})
@@ -55,6 +173,10 @@ export async function fileHandler(req: Request): Promise<Response> {
 
     // A BUNCH OF GUARD CLAUSES COZ IM IN LOVE
     const formData: FormData = await req.formData();
+
+    if(formData.get("password") !== "vind") {
+        return new Response("NO!",  { status: 401 })
+    }
     const file: File | null = formData?.get("file") as File;
     if(!file) return new Response("File required but not provided.", { status: 400 });
     if(file.size > MAX_FILE_SIZE) return new Response(`File exceeds ${MAX_FILE_SIZE / 1024 / 1024}mb limit.`, { status: 413 });

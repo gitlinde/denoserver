@@ -1,35 +1,45 @@
 import { walk} from "jsr:@std/fs";
 
-Deno.serve(handler)
+// Deno.serve(handler)
+//
+//
+// function macHandler(req: Request) {
+//
+// }
+const interfaces = Deno.networkInterfaces();
+console.log(interfaces.length); // e.g. 15
+const first = interfaces[0];
+console.log(first.mac); // e.g. lo0 IPv4 127.0.0.1
 
 
-const found: string[] = [];
-for await (const entry of walk("./saved/gif", { includeDirs: false })) {
-    found.push(entry.path);
-}
-console.log(found);
+
+// const found: string[] = [];
+// for await (const entry of walk("./saved/gif", { includeDirs: false })) {
+//     found.push(entry.path);
+// }
+// console.log(found);
 
 
 
-function handler(req: Request) {
-    if(req.method !== "GET") {
-        return new Response(null, {status: 404})
-    }
-
-
-    const responseOptions: ResponseInit = {
-        headers: {
-            "Content-Type": "text/html"
-        },
-        status: 200
-    }
-
-    const html = `
-        <img src="saved/gif/quiet on the frontal lobe.gif">
-    `;
-
-    return new Response(html, responseOptions)
-}
+// function handler(req: Request) {
+//     if(req.method !== "GET") {
+//         return new Response(null, {status: 404})
+//     }
+//
+//
+//     const responseOptions: ResponseInit = {
+//         headers: {
+//             "Content-Type": "text/html"
+//         },
+//         status: 200
+//     }
+//
+//     const html = `
+//         <img src="saved/gif/quiet on the frontal lobe.gif">
+//     `;
+//
+//     return new Response(html, responseOptions)
+// }
 
 
 // Deno.readDir
