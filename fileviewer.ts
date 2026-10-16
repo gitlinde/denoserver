@@ -90,29 +90,34 @@ const html = {
 const allHtml = [htmlGifs, htmlImages, htmlVideos]
 
 // this does create a comma between the elements in the array
-const finalHtml = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <style>
-            body {
-                background-color: black;
-                display: flex;
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: center;
-                align-items: center;
-                height: 80vh;
-                margin: 0px;
-            }
-        </style>
-       	<meta charset="UTF-8">
-       	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-       	<title>${"Funny media 🤪"}</title>
-    </head>
-    <body>${allHtml}</body>
-    </html>
-`
+const finalHtml =
+`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            background-color: grey;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            // height: 80vh;
+            // margin: 0px;
+        }
+    </style>
+   	<meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+   	<title>${"Funny media 🤪"}</title>
+</head>
+<body>
+    <form method="POST" enctype="multipart/form-data">
+        <input name="file" type="file" />
+        <input name="password" type="password"/>
+        <button type="submit">Upload</button>
+    </form>${allHtml}
+</body>
+</html>`
 
 console.log(finalHtml)
 
