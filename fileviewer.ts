@@ -53,20 +53,24 @@ export async function writeGeneratedHtmlToDisk() {
 
         srcToMime.set(srcPath, mime);
 
+        const absPath = `../${srcPath}`
+        console.log(absPath)
+
+        // const absPath = srcPath;
         // special treatment
         if(mimeSubType === "gif") {
-            htmlGifs.push(`<img width="300" height="300" src="${srcPath}" type="${mime}">`)
+            htmlGifs.push(`<img width="300" height="300" src="${absPath}" type="${mime}">`)
             continue;
         }
         if(mimeType === "image") {
-            htmlImages.push(`<img width="300" height="300" src="${srcPath}" type="${mime}">`)
+            htmlImages.push(`<img width="300" height="300" src="${absPath}" type="${mime}">`)
             continue;
         }
 
         if(mimeType === "video") {
             htmlVideos.push(`
                 <video width="300" height="300" controls>
-                    <source src="${srcPath}" type="${mime}">
+                    <source src="${absPath}" type="${mime}">
                 </video>
             `)
             continue;
@@ -87,7 +91,14 @@ export async function writeGeneratedHtmlToDisk() {
         }
     }
 
-    const allHtml = [htmlGifs, htmlImages, htmlVideos]
+    const allHtml = [htmlGifs.join(""), htmlImages.join(""), htmlVideos.join("")]
+
+    const testArr = ["ligma", "sigma"]
+
+    // const vinding:string = testArr.join("");
+    // console.log(vinding)
+
+    // console.log(allHtml)
 
     // this does create a comma between the elements in the array
     const finalHtml =
@@ -115,11 +126,11 @@ export async function writeGeneratedHtmlToDisk() {
             <input name="file" type="file" />
             <input name="password" type="password"/>
             <button type="submit">Upload</button>
-        </form>${allHtml}
+        </form>${allHtml.join("")}
     </body>
     </html>`
 
-    console.log(finalHtml)
+    // console.log(finalHtml)
 
     // const file = Deno.create("./generated.html");
     Deno.writeTextFile("./generated.html", finalHtml);

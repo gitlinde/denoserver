@@ -3,6 +3,7 @@ import { fileTypeFromBuffer, FileTypeResult } from "file-type"
 import { writeGeneratedHtmlToDisk } from "./fileviewer.ts"
 import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import { FILE_SERVER_PASSWORD, safeCompare } from "./password.ts";
+import { serveDir } from "jsr:@std/http/file-server"
 
 // AI security check
 // 4. Polyglot Files / XSS (Future Risk)
@@ -21,7 +22,7 @@ interface Bucket {
 const saveDirectory = "./saved";
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const REFRESH_RATE = 2;
-const MAX_REQUESTS = 20;
+const MAX_REQUESTS = 100;
 const buckets = new Map<string, Bucket>;
 
 init();
@@ -51,7 +52,7 @@ function take(ip: string) {
     const now = Date.now();
     const bucket = buckets.get(ip) ?? { tokens: MAX_REQUESTS, last: now }
     buckets.set(ip, bucket);
-    // console.log("CURRENT TOKENS AT CALL: " + bucket.tokens)
+    console.log("CURRENT TOKENS AT CALL: " + bucket.tokens)
 
     const timeElapsed = now - bucket.last;
     const newRequests = Math.floor((timeElapsed / REFRESH_RATE) / 1000)
@@ -124,8 +125,38 @@ export async function fileHandler(req: Request, info: Deno.ServeHandlerInfo): Pr
     const clientIp = clientNetAddr.hostname;
     console.log(`${clientIp} connected`);
 
-    if(!take(clientIp)) {
-        return new Response("Too many requests", { status: 429 })
+
+
+
+    // if(req.method === "GET") {
+    //     const url = new URL(req.url);
+    //     const filepath = decodeURIComponent(url.pathname);
+    //     try {
+    //         const file = await Deno.open("." + filepath,  { read: true });
+    //         console.log("File!!")
+    //         return new Response(file.readable);
+    //     } catch (error: unknown) {
+    //         console.log("What!?")
+    //         return new Response("file not found 404", { status: 404 });
+    //     }
+    // }
+
+    // maybe i should seperate GET requests from POST requests, i only really care about users
+    // if(!take(clientIp)) {
+    //     return new Response("Too many requests", { status: 429 })
+    // }
+    if(req.method === "GET" && new URL(req.url).pathname.startsWith("/saved/")) {
+        // console.log("HAPPENS!")
+        await serveDir(req, {fsRoot: ".", showIndex: true});
+        // await writeGeneratedHtmlToDisk();
+        // const response = await serveDir(req, {fsRoot: ".", showIndex: true});
+        // // response.
+        // const headers = new Headers(response.headers);
+        // headers.set("X-Content-Type-Options", "nosniff");
+        // return new Response(response.body, {
+        //     status: response.status,
+        //     headers: headers
+        // })
     }
 
     if(req.method !== "POST" ) {
@@ -143,8 +174,13 @@ export async function fileHandler(req: Request, info: Deno.ServeHandlerInfo): Pr
             </form>
         `;
         // return new Response("Waiting for your file, king", responseOptions);
-        return new Response(inputForm, responseOptions);
+        // return new Response(inputForm, responseOptions);
+        return new Response(await writeGeneratedHtmlToDisk(), responseOptions)
         // return new Response("NOT A POST",  {status: 405})
+    }
+
+    if(!take(clientIp)) {
+        return new Response("Too many requests", { status: 429 })
     }
 
     // A BUNCH OF GUARD CLAUSES COZ IM IN LOVE
