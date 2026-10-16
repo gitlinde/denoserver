@@ -1,0 +1,27 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { assertPath } from "../_common/assert_path.ts";
+import { isPosixPathSeparator } from "./_util.ts";
+
+/**
+ * Verifies whether provided path is absolute.
+ *
+ * @example Usage
+ * ```ts
+ * import { isAbsolute } from "@std/path/posix/is-absolute";
+ * import { assert, assertFalse } from "@std/assert";
+ *
+ * assert(isAbsolute("/home/user/Documents/"));
+ * assertFalse(isAbsolute("home/user/Documents/"));
+ * ```
+ *
+ * @param path The path to verify.
+ * @returns Whether the path is absolute.
+ */
+export function isAbsolute(path: string): boolean {
+  assertPath(path);
+  return path.length > 0 && isPosixPathSeparator(path.charCodeAt(0));
+}
+
+// denoCacheMetadata={"headers":{"x-robots-tag":"noindex","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=86400","cf-cache-status":"HIT","content-encoding":"identity","cross-origin-resource-policy":"cross-origin","accept-ranges":"bytes","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=ZqPghJHGzJEriMcZLyrDysQ3jh5IUczM99DAaK4H2gSD2q0ohHbDo%2Frl2R8kxDiC%2F3AjFTZeU%2BUu0xpxVzLMlWlGiY6kEmMqQYKYzEMyFQX4yeAjftL0rnQ%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-type":"text/typescript","content-length":"735","cf-ray":"a4b8f7f69fceb9cb-CPH","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","set-cookie":"__cf_bm=MvEefyru3VQI1nligcWDDXq7K7hOAZNrRTHfdm33ugs-1792173684.2836633-1.0.1.1-YaxWj1cC93sw1R4dc0cvBArT4f99O_ZQSCpJ9gUndO3P3pUQb5VG8n0JpGPAW2t3iHCoyuTM8KlEGyAPVAJMngWesIzdlXUcwCx20frjOhcGGe.ZSPORiTSDpfO6qgIe; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","cache-control":"public, max-age=31536000, immutable","date":"Fri, 16 Oct 2026 18:01:24 GMT","server":"cloudflare","etag":"\"976563c7d5bd0702131702d8184a6562\"","access-control-allow-origin":"*","x-jsr-backend":"modules","access-control-expose-headers":"*","age":"4328953","vary":"accept-encoding, Origin"},"url":"https://jsr.io/@std/path/1.1.6/posix/is_absolute.ts","time":1792173684}

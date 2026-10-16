@@ -1,0 +1,48 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { assertPath } from "../_common/assert_path.ts";
+import { fromFileUrl } from "./from_file_url.ts";
+import { normalize } from "./normalize.ts";
+
+/**
+ * Join all given a sequence of `paths`,then normalizes the resulting path.
+ *
+ * @example Usage
+ * ```ts
+ * import { join } from "@std/path/posix/join";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(join("/foo", "bar", "baz/asdf", "quux", ".."), "/foo/bar/baz/asdf");
+ * assertEquals(join(new URL("file:///foo"), "bar", "baz/asdf", "quux", ".."), "/foo/bar/baz/asdf");
+ * ```
+ *
+ * @example Working with URLs
+ * ```ts
+ * import { join } from "@std/path/posix/join";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const url = new URL("https://deno.land");
+ * url.pathname = join("std", "path", "mod.ts");
+ * assertEquals(url.href, "https://deno.land/std/path/mod.ts");
+ *
+ * url.pathname = join("//std", "path/", "/mod.ts");
+ * assertEquals(url.href, "https://deno.land/std/path/mod.ts");
+ * ```
+ *
+ * @param path The path to join. This can be string or file URL.
+ * @param paths The paths to join.
+ * @returns The joined path.
+ */
+export function join(path?: URL | string, ...paths: string[]): string {
+  if (path === undefined) return ".";
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
+  paths = path ? [path, ...paths] : paths;
+  paths.forEach((path) => assertPath(path));
+  const joined = paths.filter((path) => path.length > 0).join("/");
+  return joined === "" ? "." : normalize(joined);
+}
+
+// denoCacheMetadata={"headers":{"etag":"\"ccdce0907e3f06ce3e1b37760cbb76cd\"","date":"Fri, 16 Oct 2026 18:01:24 GMT","age":"4328953","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=awz7KAM7CDSeT46A%2BZIKQ0HjmsqcMruBipet8k94a4kx8DqWt4LKw4mTGYQ4WObeCl%2BrC%2FS7xvjkZbnIB02f9Hb2CU5F0mtHc9H2B2vmwvosa5UD3YVzmck%3D\"}]}","alt-svc":"h3=\":443\"; ma=86400","cf-cache-status":"HIT","cf-ray":"a4b8f7f69fd1b9cb-CPH","access-control-expose-headers":"*","set-cookie":"__cf_bm=WtxuWtJeNXSTqOgGIbVyMqIHekZaM1jzRh.9mSnndWY-1792173684.284137-1.0.1.1-RP0YwV6lBaFpeWbRaO79au30JA1LZAvG37E4R3WlgJnzdQPShtMzVxvUhrlGiwaenjzDPRt3C0iw8_aECM380B4t4nHeSAu0QWvV_LVy3.2pJxtMZC1F2ZcgG1FKKg6q; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","content-type":"text/typescript","content-length":"1587","cache-control":"public, max-age=31536000, immutable","x-content-type-options":"nosniff","accept-ranges":"bytes","server":"cloudflare","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","vary":"accept-encoding, Origin","cross-origin-resource-policy":"cross-origin","content-encoding":"identity","x-robots-tag":"noindex","access-control-allow-origin":"*","x-jsr-backend":"modules","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}"},"url":"https://jsr.io/@std/path/1.1.6/posix/join.ts","time":1792173684}

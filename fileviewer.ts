@@ -58,18 +58,36 @@ export async function writeGeneratedHtmlToDisk() {
 
         // const absPath = srcPath;
         // special treatment
+
+        let width = `width=300`;
+        width = ""
+        let height = `height=300`;
+
+        // [ta] tag
+        const noSizeLimit =
+            fileName.charAt(0) == "["
+            && fileName.charAt(1) == "t"
+            && fileName.charAt(2) == "a"
+            && fileName.charAt(3) == "]";
+        if(noSizeLimit) {
+            width=""
+            height=""
+        }
+
+
+
         if(mimeSubType === "gif") {
-            htmlGifs.push(`<img width="300" height="300" src="${absPath}" type="${mime}">`)
+            htmlGifs.push(`<img ${width} ${height} src="${absPath}" type="${mime}">`)
             continue;
         }
         if(mimeType === "image") {
-            htmlImages.push(`<img width="300" height="300" src="${absPath}" type="${mime}">`)
+            htmlImages.push(`<img ${width} ${height} src="${absPath}" type="${mime}">`)
             continue;
         }
 
         if(mimeType === "video") {
             htmlVideos.push(`
-                <video width="300" height="300" controls>
+                <video ${width} ${height} controls>
                     <source src="${absPath}" type="${mime}">
                 </video>
             `)
@@ -91,9 +109,14 @@ export async function writeGeneratedHtmlToDisk() {
         }
     }
 
-    const allHtml = [htmlGifs.join(""), htmlImages.join(""), htmlVideos.join("")]
 
-    const testArr = ["ligma", "sigma"]
+    const allHtmlMedia = [...htmlGifs, ...htmlImages, ...htmlVideos]
+    // Math.random()
+
+    let randomHtmlMedia = allHtmlMedia[Math.round(Math.random() * (allHtmlMedia.length - 1))];
+
+    const allHtml = [htmlGifs.join(""), htmlImages.join(""), htmlVideos.join("")]
+    const documentTitle = "gerald3 archives"
 
     // const vinding:string = testArr.join("");
     // console.log(vinding)
@@ -119,14 +142,24 @@ export async function writeGeneratedHtmlToDisk() {
         </style>
        	<meta charset="UTF-8">
        	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-       	<title>${"Funny media 🤪"}</title>
+       	<title>${documentTitle}</title>
     </head>
+    <header>
+        <details>
+       	    <summary style="color: wheat;">Shrödingers meme</summary>
+            ${randomHtmlMedia}
+        </details>
+    </header>
+
     <body>
         <form method="POST" enctype="multipart/form-data">
             <input name="file" type="file" />
             <input name="password" type="password"/>
             <button type="submit">Upload</button>
-        </form>${allHtml.join("")}
+        </form>
+
+
+        ${allHtml.join("")}
     </body>
     </html>`
 

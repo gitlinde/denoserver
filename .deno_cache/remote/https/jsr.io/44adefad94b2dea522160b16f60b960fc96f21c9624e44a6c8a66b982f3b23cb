@@ -1,0 +1,25 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// Copyright the Browserify authors. MIT License.
+
+import { resolve } from "jsr:@std/path@^1.1.5/resolve";
+import { toPathString } from "./_to_path_string.ts";
+
+/**
+ * Checks if two paths are the same.
+ *
+ * @param src Source file path as a string or URL.
+ * @param dest Destination file path as a string or URL.
+ *
+ * @returns `true` if the paths are the same, `false` otherwise.
+ */
+export function isSamePath(
+  src: string | URL,
+  dest: string | URL,
+): boolean {
+  src = toPathString(src);
+  dest = toPathString(dest);
+
+  return resolve(src) === resolve(dest);
+}
+
+// denoCacheMetadata={"headers":{"cf-ray":"a4b8f7f69f8ab9cb-CPH","server":"cloudflare","cf-cache-status":"HIT","access-control-allow-origin":"*","etag":"\"1ea5c84105f70dc709cee109fe571766\"","access-control-expose-headers":"*","x-jsr-backend":"modules","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=ywlBufVQ6aXXmy%2B%2Fj7NATzYDTQnbkfuKa1v9OkoQEE1lMvIN9whP1seEX4v%2F%2FySNZifVdOskY8M%2BOLIXbGI%2BCYB8gdfko4y15cdhb8FIRlrrXmTwKSnJ7ds%3D\"}]}","content-length":"623","x-content-type-options":"nosniff","content-type":"text/typescript","vary":"accept-encoding, Origin","cache-control":"public, max-age=31536000, immutable","date":"Fri, 16 Oct 2026 18:01:24 GMT","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","set-cookie":"__cf_bm=HxKMvytd6tpHBbQclmXTRjtImtRTUBT76WIwHhJKe8I-1792173684.2675264-1.0.1.1-i6PaAVqnClxDfX_PW1hOMb269ZTlGv_qlZpS.VVs2fKDodP3T7qUQWSpe.92L50MP44EUg60puswAHRpi2rjRJUiZ6CBrDd0oAMkcUnTzUla9VDygK5cNuMczSZGMov_; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","x-robots-tag":"noindex","age":"4314917","content-encoding":"identity","alt-svc":"h3=\":443\"; ma=86400","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","accept-ranges":"bytes","cross-origin-resource-policy":"cross-origin"},"url":"https://jsr.io/@std/fs/1.0.24/_is_same_path.ts","time":1792173684}

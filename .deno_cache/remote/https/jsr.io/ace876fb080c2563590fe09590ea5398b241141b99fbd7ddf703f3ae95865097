@@ -1,0 +1,52 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+/**
+ * Gets the IPv4 or IPv6 network address of the machine.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+
+ *
+ * This is inspired by the util of the same name in
+ * {@linkcode https://www.npmjs.com/package/serve | npm:serve}.
+ *
+ * For more advanced use, use {@linkcode Deno.networkInterfaces} directly.
+ *
+ * @see {@link https://github.com/vercel/serve/blob/1ea55b1b5004f468159b54775e4fb3090fedbb2b/source/utilities/http.ts#L33}
+ *
+ * @param family The IP protocol version of the interface to get the address of.
+ * @returns The IPv4 network address of the machine or `undefined` if not found.
+ *
+ * @example Get the IPv4 network address (default)
+ * ```ts no-assert ignore
+ * import { getNetworkAddress } from "@std/net/unstable-get-network-address";
+ *
+ * const hostname = getNetworkAddress()!;
+ *
+ * Deno.serve({ port: 0, hostname }, () => new Response("Hello, world!"));
+ * ```
+ *
+ * @example Get the IPv6 network address
+ * ```ts no-assert ignore
+ * import { getNetworkAddress } from "@std/net/unstable-get-network-address";
+ *
+ * const hostname = getNetworkAddress("IPv6")!;
+ *
+ * Deno.serve({ port: 0, hostname }, () => new Response("Hello, world!"));
+ * ```
+ */
+export function getNetworkAddress(
+  family: Deno.NetworkInterfaceInfo["family"] = "IPv4",
+): string | undefined {
+  return Deno.networkInterfaces()
+    .find((i) =>
+      i.family === family &&
+      i.mac !== "00:00:00:00:00:00" &&
+      (family === "IPv4"
+        // Cannot lie within 127.0.0.0/8
+        ? !i.address.startsWith("127")
+        // Cannot be loopback or link-local addresses
+        : !(i.address === "::1" || i.address === "fe80::1") && i.scopeid === 0)
+    )
+    ?.address;
+}
+
+// denoCacheMetadata={"headers":{"content-length":"1737","cf-ray":"a4b8f7f69fabb9cb-CPH","accept-ranges":"bytes","content-encoding":"identity","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","access-control-allow-origin":"*","x-content-type-options":"nosniff","age":"1808258","x-robots-tag":"noindex","date":"Fri, 16 Oct 2026 18:01:24 GMT","set-cookie":"__cf_bm=K2MJsC.l_kSD0iQmtpdbtKG.xyxtsILILjVrwF.qBZc-1792173684.2762592-1.0.1.1-OZi5rqxUSG3kiSk1IdfVV0yqGG.wDqKZcKonv5fS7DmBes8zbsQ.UX3BublJzyZLlg7aT86MAfvdQEQF85.1rY10Qpi8p_USWS07zyDuVP98Z1kU_wU4DggBtcMt5HXs; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","etag":"\"03b69baa43ccca9bb86760d61b33fedc\"","cache-control":"public, max-age=31536000, immutable","server":"cloudflare","content-type":"text/typescript","vary":"accept-encoding, Origin","access-control-expose-headers":"*","alt-svc":"h3=\":443\"; ma=86400","cf-cache-status":"HIT","x-jsr-backend":"modules","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","cross-origin-resource-policy":"cross-origin","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=I5wyZJCW3lYXgVn%2B6GioKMrmNTnFCU8%2BYPZbpx%2BPyEelUbDtcKsdp4xo0ZpSVOjF6LDZ5c9XpEllT25iadyVvBk%2FNBA6vMifamHsyg9esB6fQTfzrZ3Uyww%3D\"}]}"},"url":"https://jsr.io/@std/net/1.0.7/unstable_get_network_address.ts","time":1792173684}

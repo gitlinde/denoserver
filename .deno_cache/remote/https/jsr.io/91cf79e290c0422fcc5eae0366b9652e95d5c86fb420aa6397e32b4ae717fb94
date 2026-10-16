@@ -1,0 +1,20 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+import { isWindows } from "jsr:@std/internal@^1.0.14/os";
+
+/**
+ * The character used to separate entries in the PATH environment variable.
+ * On Windows, this is `;`. On all other platforms, this is `:`.
+ */
+export const DELIMITER = isWindows ? ";" as const : ":" as const;
+/**
+ * The character used to separate components of a file path.
+ * On Windows, this is `\`. On all other platforms, this is `/`.
+ */
+export const SEPARATOR = isWindows ? "\\" as const : "/" as const;
+/**
+ * A regular expression that matches one or more path separators.
+ */
+export const SEPARATOR_PATTERN = isWindows ? /[\\/]+/ : /\/+/;
+
+// denoCacheMetadata={"headers":{"accept-ranges":"bytes","cf-ray":"a4b8f7f69f9ab9cb-CPH","cf-cache-status":"HIT","age":"4328953","date":"Fri, 16 Oct 2026 18:01:24 GMT","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-jsr-backend":"modules","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=gptIs4GrFjYKe7Jr79GyC7DAVmfhq%2BvkVG8k%2Buj2z0nuCc5A%2BH14B9n%2B4aUPR6MFKqEQS8ioVGkZnB84HPnpJZktxDNk5Dc%2F9qSu2OFNilp1e8Ggj7snigA%3D\"}]}","set-cookie":"__cf_bm=.ptHrNikHgOx2nSxi3.W40eD2fFdJaSXuiwc8PIu9UY-1792173684.2718954-1.0.1.1-6TSwqgxSk_fKfOsLaJ6wGJhlbayfmc4kPx8w8f5xAJbljK7IfCeEh2YZ.2gFzZ8WD2s_ubVr1Jx5Um1UESTz_Q5NyiQ6sDGMhhDoVo9w_xE9tpxHybqi7IirKgZNOvJY; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","alt-svc":"h3=\":443\"; ma=86400","access-control-allow-origin":"*","vary":"accept-encoding, Origin","x-content-type-options":"nosniff","cache-control":"public, max-age=31536000, immutable","content-encoding":"identity","x-robots-tag":"noindex","server":"cloudflare","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-type":"text/typescript","content-length":"704","access-control-expose-headers":"*","etag":"\"b2b2f51f8b8847843231ee818955f041\"","cross-origin-resource-policy":"cross-origin"},"url":"https://jsr.io/@std/path/1.1.6/constants.ts","time":1792173684}

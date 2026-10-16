@@ -1,0 +1,168 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { CHAR_COLON } from "../_common/constants.ts";
+import { normalizeString } from "../_common/normalize_string.ts";
+import { assertPath } from "../_common/assert_path.ts";
+import { cwd } from "../_common/env.ts";
+import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+
+/**
+ * Resolves path segments into a `path`.
+ *
+ * @example Usage
+ * ```ts
+ * import { resolve } from "@std/path/windows/resolve";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const resolved = resolve("C:\\foo\\bar", "..\\baz");
+ * assertEquals(resolved, "C:\\foo\\baz");
+ * ```
+ *
+ * @param pathSegments The path segments to process to path
+ * @returns The resolved path
+ */
+export function resolve(...pathSegments: string[]): string {
+  let resolvedDevice = "";
+  let resolvedTail = "";
+  let resolvedAbsolute = false;
+
+  for (let i = pathSegments.length - 1; i >= -1; i--) {
+    let path: string;
+    if (i >= 0) {
+      path = pathSegments[i]!;
+    } else if (!resolvedDevice) {
+      path = cwd(
+        "Resolved a drive-letter-less path without a current working directory (CWD)",
+      );
+    } else {
+      path = cwd(
+        "Resolved a relative path without a current working directory (CWD)",
+      );
+
+      // Verify that a cwd was found and that it actually points
+      // to our drive. If not, default to the drive's root.
+      if (
+        path === undefined ||
+        path.slice(0, 3).toLowerCase() !== `${resolvedDevice.toLowerCase()}\\`
+      ) {
+        path = `${resolvedDevice}\\`;
+      }
+    }
+
+    assertPath(path);
+
+    const len = path.length;
+
+    // Skip empty entries
+    if (len === 0) continue;
+
+    let rootEnd = 0;
+    let device = "";
+    let isAbsolute = false;
+    const code = path.charCodeAt(0);
+
+    // Try to match a root
+    if (len > 1) {
+      if (isPathSeparator(code)) {
+        // Possible UNC root
+
+        // If we started with a separator, we know we at least have an
+        // absolute path of some kind (UNC or otherwise)
+        isAbsolute = true;
+
+        if (isPathSeparator(path.charCodeAt(1))) {
+          // Matched double path separator at beginning
+          let j = 2;
+          let last = j;
+          // Match 1 or more non-path separators
+          for (; j < len; ++j) {
+            if (isPathSeparator(path.charCodeAt(j))) break;
+          }
+          if (j < len && j !== last) {
+            const firstPart = path.slice(last, j);
+            // Matched!
+            last = j;
+            // Match 1 or more path separators
+            for (; j < len; ++j) {
+              if (!isPathSeparator(path.charCodeAt(j))) break;
+            }
+            if (j < len && j !== last) {
+              // Matched!
+              last = j;
+              // Match 1 or more non-path separators
+              for (; j < len; ++j) {
+                if (isPathSeparator(path.charCodeAt(j))) break;
+              }
+              if (j === len) {
+                // We matched a UNC root only
+                device = `\\\\${firstPart}\\${path.slice(last)}`;
+                rootEnd = j;
+              } else if (j !== last) {
+                // We matched a UNC root with leftovers
+
+                device = `\\\\${firstPart}\\${path.slice(last, j)}`;
+                rootEnd = j;
+              }
+            }
+          }
+        } else {
+          rootEnd = 1;
+        }
+      } else if (isWindowsDeviceRoot(code)) {
+        // Possible device root
+
+        if (path.charCodeAt(1) === CHAR_COLON) {
+          device = path.slice(0, 2);
+          rootEnd = 2;
+          if (len > 2) {
+            if (isPathSeparator(path.charCodeAt(2))) {
+              // Treat separator following drive name as an absolute path
+              // indicator
+              isAbsolute = true;
+              rootEnd = 3;
+            }
+          }
+        }
+      }
+    } else if (isPathSeparator(code)) {
+      // `path` contains just a path separator
+      rootEnd = 1;
+      isAbsolute = true;
+    }
+
+    if (
+      device.length > 0 &&
+      resolvedDevice.length > 0 &&
+      device.toLowerCase() !== resolvedDevice.toLowerCase()
+    ) {
+      // This path points to another device so it is not applicable
+      continue;
+    }
+
+    if (resolvedDevice.length === 0 && device.length > 0) {
+      resolvedDevice = device;
+    }
+    if (!resolvedAbsolute) {
+      resolvedTail = `${path.slice(rootEnd)}\\${resolvedTail}`;
+      resolvedAbsolute = isAbsolute;
+    }
+
+    if (resolvedAbsolute && resolvedDevice.length > 0) break;
+  }
+
+  // At this point the path should be resolved to a full absolute path,
+  // but handle relative paths to be safe (might happen when cwd() fails)
+
+  // Normalize the tail path
+  resolvedTail = normalizeString(
+    resolvedTail,
+    !resolvedAbsolute,
+    "\\",
+    isPathSeparator,
+  );
+
+  return resolvedDevice + (resolvedAbsolute ? "\\" : "") + resolvedTail || ".";
+}
+
+// denoCacheMetadata={"headers":{"cf-ray":"a4b8f7f69fdcb9cb-CPH","content-encoding":"identity","server":"cloudflare","cache-control":"public, max-age=31536000, immutable","age":"4328953","etag":"\"db23ac5b5c3fd4f511b7a30f606430aa\"","x-content-type-options":"nosniff","access-control-expose-headers":"*","vary":"accept-encoding, Origin","access-control-allow-origin":"*","x-jsr-backend":"modules","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-type":"text/typescript","accept-ranges":"bytes","alt-svc":"h3=\":443\"; ma=86400","content-length":"4926","cross-origin-resource-policy":"cross-origin","date":"Fri, 16 Oct 2026 18:01:24 GMT","x-robots-tag":"noindex","set-cookie":"__cf_bm=1_a9AZRi92vcuWtZtCVGHYHDtLGaAvQEHSDRnK.cOVM-1792173684.2867157-1.0.1.1-PwVUMW816gbuAhEJV5mwGSgGx5r6RCLtkgZG2pmp1Rx3tgKSB_KVryn7ptQsWkKiLmaz4nP.Bk2UO1.W3L.mMbzZjq0Y8zXHNWk6LpTUjgd7IaSiYeGoCAj2k8.KppgM; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","cf-cache-status":"HIT","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=T0iXRurXDgGowuZUGJ%2Be%2FFxaKbc6k%2BHqSwCFAKR1CCAJugqvTVxlkVGQu79IceBgHOfO0GqEuL%2Bcl%2FpJ98LZNvXd4GkRYffmICSscH1W3E0l9aACssjtjk8%3D\"}]}","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';"},"url":"https://jsr.io/@std/path/1.1.6/windows/resolve.ts","time":1792173684}

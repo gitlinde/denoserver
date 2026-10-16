@@ -1,0 +1,33 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { isWindows } from "jsr:@std/internal@^1.0.14/os";
+import { join as posixJoin } from "./posix/join.ts";
+import { join as windowsJoin } from "./windows/join.ts";
+
+/**
+ * Joins a sequence of paths, then normalizes the resulting path.
+ *
+ * @example Usage
+ * ```ts
+ * import { join } from "@std/path/join";
+ * import { assertEquals } from "@std/assert";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(join("C:\\foo", "bar", "baz\\quux", "garply", ".."), "C:\\foo\\bar\\baz\\quux");
+ *   assertEquals(join(new URL("file:///C:/foo"), "bar", "baz/asdf", "quux", ".."), "C:\\foo\\bar\\baz\\asdf");
+ * } else {
+ *   assertEquals(join("/foo", "bar", "baz/quux", "garply", ".."), "/foo/bar/baz/quux");
+ *   assertEquals(join(new URL("file:///foo"), "bar", "baz/asdf", "quux", ".."), "/foo/bar/baz/asdf");
+ * }
+ * ```
+ *
+ * @param path The path to join. This can be string or file URL.
+ * @param paths Paths to be joined and normalized.
+ * @returns The joined and normalized path.
+ */
+export function join(path: string | URL, ...paths: string[]): string {
+  return isWindows ? windowsJoin(path, ...paths) : posixJoin(path, ...paths);
+}
+
+// denoCacheMetadata={"headers":{"cache-control":"public, max-age=31536000, immutable","cf-cache-status":"HIT","content-length":"1237","access-control-allow-origin":"*","cross-origin-resource-policy":"cross-origin","content-type":"text/typescript","x-robots-tag":"noindex","vary":"accept-encoding, Origin","date":"Fri, 16 Oct 2026 18:01:24 GMT","content-encoding":"identity","x-content-type-options":"nosniff","etag":"\"04c6fb628e8d3badb864cc3c324ef06c\"","x-jsr-backend":"modules","access-control-expose-headers":"*","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=4l3FUK8aJraDvqQ6t91nQFIgSqmZcRU3O%2F9kPyV%2FppOBkFtsHXyD02tXpcW2VcNvrrba9O%2FIAGRal2MmEUe1iM25V4aHbmCz4HaU9ihxcb0XLgCCFibk9Es%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","alt-svc":"h3=\":443\"; ma=86400","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","cf-ray":"a4b8f7f69f94b9cb-CPH","age":"4328953","server":"cloudflare","accept-ranges":"bytes","set-cookie":"__cf_bm=16ODd2fTcYA6DtdNaH7bSHtJpJu.zoCPgmuWrlbnPys-1792173684.2698348-1.0.1.1-jIPa3QncqN1Lu.JMBolouA9WusW5eXKh1pxPVwhdQrEmVhNJME8sO4AmsPlF.In8hfXUL28ctOir4TeHzmPTs9pKr14XOOQeieMCLw9vvgX.R8JiDkd8v9p36egjJGBN; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT"},"url":"https://jsr.io/@std/path/1.1.6/join.ts","time":1792173684}

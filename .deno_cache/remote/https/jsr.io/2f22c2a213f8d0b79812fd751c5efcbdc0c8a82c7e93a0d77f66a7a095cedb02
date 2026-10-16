@@ -1,0 +1,87 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { parseMediaType } from "./parse_media_type.ts";
+import { getCharset } from "./get_charset.ts";
+import { formatMediaType } from "./format_media_type.ts";
+import type { db } from "./_db.ts";
+import { typeByExtension } from "./type_by_extension.ts";
+
+/** MIME-types database. */
+export type DB = typeof db;
+/** Maps content types to their corresponding file extensions. */
+export type ContentTypeToExtension = {
+  /**
+   * Maps each content type key to its corresponding file extension.
+   */
+  [K in keyof DB]: DB[K] extends { "extensions": readonly string[] }
+    ? DB[K]["extensions"][number]
+    : never;
+};
+
+/** Known extension or type. Used in {@linkcode contentType}. */
+export type KnownExtensionOrType =
+  | keyof ContentTypeToExtension
+  | ContentTypeToExtension[keyof ContentTypeToExtension]
+  | `.${ContentTypeToExtension[keyof ContentTypeToExtension]}`;
+
+/**
+ * Returns the full `Content-Type` or `Content-Disposition` header value for the
+ * given extension or media type.
+ *
+ * The function will treat the `extensionOrType` as a media type when it
+ * contains a `/`, otherwise it will process it as an extension, with or without
+ * the leading `.`.
+ *
+ * Returns `undefined` if unable to resolve the media type.
+ *
+ * @typeParam T Type of the extension or media type to resolve.
+ *
+ * @param extensionOrType The extension or media type to resolve.
+ *
+ * @returns The full `Content-Type` or `Content-Disposition` header value, or
+ * `undefined` if unable to resolve the media type.
+ *
+ * @example Usage
+ * ```ts
+ * import { contentType } from "@std/media-types/content-type";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(contentType(".json"), "application/json; charset=UTF-8");
+ * assertEquals(contentType("text/html"), "text/html; charset=UTF-8");
+ * assertEquals(contentType("text/html; charset=UTF-8"), "text/html; charset=UTF-8");
+ * assertEquals(contentType("txt"), "text/plain; charset=UTF-8");
+ * assertEquals(contentType("foo"), undefined);
+ * assertEquals(contentType("file.json"), undefined);
+ * ```
+ */
+export function contentType<
+  // Workaround to autocomplete for parameters: https://github.com/microsoft/TypeScript/issues/29729#issuecomment-567871939
+  // deno-lint-ignore ban-types
+  T extends (string & {}) | KnownExtensionOrType,
+>(
+  extensionOrType: T,
+): Lowercase<T> extends KnownExtensionOrType ? string : string | undefined {
+  try {
+    const [mediaType, params = {}] = extensionOrType.includes("/")
+      ? parseMediaType(extensionOrType)
+      : [typeByExtension(extensionOrType), undefined];
+    if (!mediaType) {
+      return undefined as Lowercase<T> extends KnownExtensionOrType ? string
+        : string | undefined;
+    }
+    if (!("charset" in params)) {
+      const charset = getCharset(mediaType);
+      if (charset) {
+        params.charset = charset;
+      }
+    }
+    return formatMediaType(mediaType, params);
+  } catch {
+    // just swallow returning undefined
+  }
+  return undefined as Lowercase<T> extends KnownExtensionOrType ? string
+    : string | undefined;
+}
+
+// denoCacheMetadata={"headers":{"age":"4328952","access-control-expose-headers":"*","content-type":"text/typescript","content-length":"3163","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","access-control-allow-origin":"*","alt-svc":"h3=\":443\"; ma=86400","server":"cloudflare","cf-ray":"a4b8f7f69f9db9cb-CPH","cf-cache-status":"HIT","accept-ranges":"bytes","cross-origin-resource-policy":"cross-origin","x-jsr-backend":"modules","vary":"Origin","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-content-type-options":"nosniff","cache-control":"public, max-age=31536000, immutable","x-robots-tag":"noindex","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Lusu1euIPxwM0Ed4%2BfT9gMqGn7My0PnAQYtRHJIxEwWgCO5vQKa05nXTr9b2CturCcSbPEa5v0%2BF6uIMiT12McdzFm2uQ9Zy8gprE5GMeHNG6P5%2BnyDZ8cw%3D\"}]}","date":"Fri, 16 Oct 2026 18:01:24 GMT","etag":"\"de30ca266035f13736e34c5c82ae029a\"","set-cookie":"__cf_bm=wJua3dUITLnCj5e0cn14ZMqcNnic4jIdx.3cMzPZlOU-1792173684.2735615-1.0.1.1-O_Hg6bjmdGNGqNVVoRczbLwhc2Zk8hUXqw2ut3Uo5y1kKN_KagZBeVVILi6bVk3na4OX_sMeVKTaRhWb3RWXfeVFw2MH6xP2secajAs7CvaoVnucYffIfFwF3UoCWATN; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT"},"url":"https://jsr.io/@std/media-types/1.1.0/content_type.ts","time":1792173684}

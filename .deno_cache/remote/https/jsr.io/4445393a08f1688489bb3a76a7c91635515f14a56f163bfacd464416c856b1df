@@ -1,0 +1,69 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import {
+  assertArgs,
+  lastPathSegment,
+  stripSuffix,
+} from "../_common/basename.ts";
+import { fromFileUrl } from "./from_file_url.ts";
+import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
+import { isPosixPathSeparator } from "./_util.ts";
+
+/**
+ * Return the last portion of a `path`.
+ * Trailing directory separators are ignored, and optional suffix is removed.
+ *
+ * @example Usage
+ * ```ts
+ * import { basename } from "@std/path/posix/basename";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(basename("/home/user/Documents/"), "Documents");
+ * assertEquals(basename("/home/user/Documents/image.png"), "image.png");
+ * assertEquals(basename("/home/user/Documents/image.png", ".png"), "image");
+ * assertEquals(basename(new URL("file:///home/user/Documents/image.png")), "image.png");
+ * assertEquals(basename(new URL("file:///home/user/Documents/image.png"), ".png"), "image");
+ * ```
+ *
+ * @example Working with URLs
+ *
+ * Only `URL` instances with the `file:` protocol are accepted. To process a
+ * non-`file:` URL, pass it as a string or pass its `pathname` property.
+ *
+ * Note: This function doesn't automatically strip hash and query parts from
+ * URLs. If your URL contains a hash or query, remove them before passing the
+ * URL to the function. This can be done by passing the URL to `new URL(url)`,
+ * and setting the `hash` and `search` properties to empty strings.
+ *
+ * ```ts
+ * import { basename } from "@std/path/posix/basename";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(basename("https://deno.land/std/path/mod.ts"), "mod.ts");
+ * assertEquals(basename("https://deno.land/std/path/mod.ts", ".ts"), "mod");
+ * assertEquals(basename("https://deno.land/std/path/mod.ts?a=b"), "mod.ts?a=b");
+ * assertEquals(basename("https://deno.land/std/path/mod.ts#header"), "mod.ts#header");
+ * assertEquals(basename(new URL("https://deno.land/std/path/mod.ts").pathname), "mod.ts");
+ * ```
+ *
+ * @param path The path to extract the name from.
+ * @param suffix The suffix to remove from extracted name.
+ * @returns The extracted name.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
+ */
+export function basename(path: string | URL, suffix = ""): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
+  assertArgs(path, suffix);
+
+  const lastSegment = lastPathSegment(path, isPosixPathSeparator);
+  const strippedSegment = stripTrailingSeparators(
+    lastSegment,
+    isPosixPathSeparator,
+  );
+  return suffix ? stripSuffix(strippedSegment, suffix) : strippedSegment;
+}
+
+// denoCacheMetadata={"headers":{"content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","content-type":"text/typescript","etag":"\"aa885ddf509707174b2e3c6a5b3e676e\"","vary":"accept-encoding, Origin","x-robots-tag":"noindex","server":"cloudflare","accept-ranges":"bytes","age":"4328953","access-control-expose-headers":"*","x-jsr-backend":"modules","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=JI0t4MjjOA9%2FQTOSH3VlCBEfk7QSrYvGJcic%2Fx8QRmov0wpN%2F1AfxJzOGc0NJ0%2BEeFkRJ0SU7BWxRrW6kFg4rBJNt6dj%2FMb1KQzBhQyfZ9sfIEEduWtkGu0%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","access-control-allow-origin":"*","cache-control":"public, max-age=31536000, immutable","x-content-type-options":"nosniff","cf-cache-status":"HIT","alt-svc":"h3=\":443\"; ma=86400","cross-origin-resource-policy":"cross-origin","content-length":"2698","content-encoding":"identity","set-cookie":"__cf_bm=CV8OnMSM7ws9XCOTEwSnrNJJQqgDvczmh6fpt5XtNDU-1792173684.290744-1.0.1.1-Rj0e3Q3vqIZ9LdXbELHNVjmn6QwdsUUSiSl7DEl.kOh1B7VW20Dnnps1SXLMjMLbsdejzPjE4ig_XEP8OGzV33qyOqMiU_RMbnUGAWPzIdXukvjiN6KyYOo4FR026OT.; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","date":"Fri, 16 Oct 2026 18:01:24 GMT","cf-ray":"a4b8f7f69ff2b9cb-CPH"},"url":"https://jsr.io/@std/path/1.1.6/posix/basename.ts","time":1792173684}

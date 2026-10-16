@@ -1,0 +1,18 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+/**
+ * The character used to separate entries in the PATH environment variable.
+ */
+export const DELIMITER = ":" as const;
+/**
+ * The character used to separate components of a file path.
+ */
+export const SEPARATOR = "/" as const;
+/**
+ * A regular expression that matches one or more path separators.
+ */
+// deno-lint-ignore deno-style-guide/naming-convention
+export const SEPARATOR_PATTERN = /\/+/;
+
+// denoCacheMetadata={"headers":{"content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-content-type-options":"nosniff","etag":"\"70b230f95f2d0c932bf2664d91a4c854\"","set-cookie":"__cf_bm=3dVNU7aJBueLrNGj5jCafybqeKprb3uKEc5n5hM2vzI-1792173684.2951148-1.0.1.1-WKDBtFNOtw1gR9OPTPcNl3MJNxQOL4QTUvsfK_Co6Qyp5YdftSEHx6wTNyiAMkP1CxGlpTjSZxmydCt4KVkZ5a_QbxH4.LPWQ8O1_CQaOBdJ.SLa1VlqvKSfFS__VTgn; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","access-control-allow-origin":"*","server":"cloudflare","vary":"accept-encoding, Origin","cf-ray":"a4b8f7f6980db9cb-CPH","content-encoding":"identity","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","alt-svc":"h3=\":443\"; ma=86400","cross-origin-resource-policy":"cross-origin","x-jsr-backend":"modules","age":"4328953","date":"Fri, 16 Oct 2026 18:01:24 GMT","x-robots-tag":"noindex","access-control-expose-headers":"*","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=p3o6GkihW9lb1SZrmVmaPUVa9HPZpFpGzxSWI272raoT3yjxZmjI93SYU7%2B379QiKCG%2FNRLr8VmyYk%2FIs5cSBBIk53yPW0mmVFoQtT0dfRRKWJJDicC6YRk%3D\"}]}","content-length":"493","content-type":"text/typescript","cf-cache-status":"HIT","accept-ranges":"bytes","cache-control":"public, max-age=31536000, immutable"},"url":"https://jsr.io/@std/path/1.1.6/posix/constants.ts","time":1792173684}

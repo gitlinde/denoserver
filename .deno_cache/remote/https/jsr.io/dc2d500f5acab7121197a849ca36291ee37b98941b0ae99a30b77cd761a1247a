@@ -1,0 +1,73 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+/**
+ * A template literal tag function for creating HTML strings with interpolated
+ * values.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * This function processes template literals and concatenates them with
+ * interpolated values. Values are inserted as-is without any HTML escaping or
+ * sanitization. Undefined values are treated as empty strings.
+ *
+ * > [!WARNING]
+ * > **Security Warning**: This function does NOT escape HTML. When
+ * > interpolating user-provided data, you must manually escape it to prevent
+ * > XSS (Cross-Site Scripting) attacks. Only use this function with trusted
+ * > data or data that has been properly sanitized. Use
+ * > {@linkcode https://jsr.io/@std/html/doc/~/escape | escape()} for escaping.
+ *
+ * @param strings The template string array containing the static parts of the template
+ * @param values The values to be interpolated into the template
+ * @returns The resulting HTML string with interpolated values
+ *
+ * @example Usage with trusted content
+ * ```ts
+ * import { html } from "@std/html/unstable-html";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const name = "Alice";
+ * const color = "blue";
+ * const htmlContent = html`
+ *   <div>
+ *     <h1>Hello, ${name}!</h1>
+ *     <p style="color: ${color};">Welcome to our site.</p>
+ *   </div>
+ * `;
+ *
+ * assertEquals(htmlContent, `
+ *   <div>
+ *     <h1>Hello, Alice!</h1>
+ *     <p style="color: blue;">Welcome to our site.</p>
+ *   </div>
+ * `);
+ * ```
+ *
+ * @example Usage with untrusted content that needs to be escaped
+ * ```ts
+ * import { html } from "@std/html/unstable-html";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { escape } from "@std/html/entities";
+ *
+ * // WARNING: This is vulnerable to XSS attacks!
+ * const userInput = '<script>alert("XSS")</script>';
+ * const unsafeHtml = html`<div>${userInput}</div>`;
+ *
+ * const safeHtml = html`<div>${escape(userInput)}</div>`;
+ *
+ * assertEquals(unsafeHtml, '<div><script>alert("XSS")</script></div>');
+ * assertEquals(safeHtml, "<div>&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;</div>");
+ * ```
+ */
+export function html(
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): string {
+  return strings.reduce(
+    (result, str, i) => result + str + (values[i] ?? ""),
+    "",
+  );
+}
+
+// denoCacheMetadata={"headers":{"nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","access-control-expose-headers":"*","server":"cloudflare","set-cookie":"__cf_bm=ZfqunNo3t7P0_ybmNXzJBKvspeEvNPQA5Cxxm9Q9mhc-1792173684.2780688-1.0.1.1-cIzQX1q4qJ47XN9Y.5sAZ373UQepV.C6XnONOB10_qlo3abwZYDKZT_ng88HvX968Yuh9LPygeGDoB_e5Vvc7SI7BJebPntD8hK0ZSXxhl7v2duU3dCKLzuJLCFDeWbA; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","date":"Fri, 16 Oct 2026 18:01:24 GMT","alt-svc":"h3=\":443\"; ma=86400","x-content-type-options":"nosniff","accept-ranges":"bytes","cache-control":"public, max-age=31536000, immutable","content-encoding":"identity","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-jsr-backend":"modules","x-robots-tag":"noindex","cf-cache-status":"HIT","age":"4328952","content-type":"text/typescript","etag":"\"d416e6589c7608e4aad1b930ce33900f\"","content-length":"2400","cross-origin-resource-policy":"cross-origin","cf-ray":"a4b8f7f69fb1b9cb-CPH","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=QOg3KbAuSLBdaArR9JHRvl9ZNRABN0ZZVbM5cdNob63%2Bnl80sU0Stdwq4EoUI6I%2FrZ%2BXElvOOYF228byqSrzWKMXUqjQRA1hOr931Op156%2B%2F18WfYNxb%2FlY%3D\"}]}","vary":"accept-encoding, Origin","access-control-allow-origin":"*"},"url":"https://jsr.io/@std/html/1.0.7/unstable_html.ts","time":1792173684}

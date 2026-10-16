@@ -1,0 +1,47 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// Copyright the Browserify authors. MIT License.
+
+import { basename } from "jsr:@std/path@^1.1.5/basename";
+import { normalize } from "jsr:@std/path@^1.1.5/normalize";
+import { toPathString } from "./_to_path_string.ts";
+
+/**
+ * Walk entry for {@linkcode walk}, {@linkcode walkSync},
+ * {@linkcode expandGlob} and {@linkcode expandGlobSync}.
+ */
+export interface WalkEntry extends Deno.DirEntry {
+  /** Full path of the entry. */
+  path: string;
+}
+
+/** Create {@linkcode WalkEntry} for the `path` synchronously. */
+export function createWalkEntrySync(path: string | URL): WalkEntry {
+  path = toPathString(path);
+  path = normalize(path);
+  const name = basename(path);
+  const info = Deno.statSync(path);
+  return {
+    path,
+    name,
+    isFile: info.isFile,
+    isDirectory: info.isDirectory,
+    isSymlink: info.isSymlink,
+  };
+}
+
+/** Create {@linkcode WalkEntry} for the `path` asynchronously. */
+export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
+  path = toPathString(path);
+  path = normalize(path);
+  const name = basename(path);
+  const info = await Deno.stat(path);
+  return {
+    path,
+    name,
+    isFile: info.isFile,
+    isDirectory: info.isDirectory,
+    isSymlink: info.isSymlink,
+  };
+}
+
+// denoCacheMetadata={"headers":{"access-control-allow-origin":"*","cf-ray":"a4b8f7f69f85b9cb-CPH","vary":"accept-encoding, Origin","cross-origin-resource-policy":"cross-origin","set-cookie":"__cf_bm=DGTBtGk1GsNPgLP_ZYnk43KlDX5ccNav.fEgoby2.lg-1792173684.2667346-1.0.1.1-tvglbqZVebpowVis36y1guwNuAJGjPCV7XQZeBlQ6YLuR1ChvrRRYLtN1yY9Zrg.uruV6CvR1Hz1gMIAs437DcQnMvqocNFX.M0ZDuoxmvyMNYY9sxAXZdikI1NMWUvt; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=I3skV%2BOZgxg4RxIivEvio23sF6%2F6WDHJIvWdcEbLzYuuoKu2q760Q4z1lJ6hlpWXouF%2BU8GUNN4UXwJOMXyScKAVEIYGOL1ilB72AdXiVSZTT3yjgQzUshU%3D\"}]}","content-length":"1291","alt-svc":"h3=\":443\"; ma=86400","x-robots-tag":"noindex","etag":"\"6a5ec729b1729bff3efedc15552d8d86\"","accept-ranges":"bytes","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","cf-cache-status":"HIT","date":"Fri, 16 Oct 2026 18:01:24 GMT","server":"cloudflare","access-control-expose-headers":"*","age":"4314917","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","x-jsr-backend":"modules","content-type":"text/typescript","cache-control":"public, max-age=31536000, immutable","content-encoding":"identity","x-content-type-options":"nosniff"},"url":"https://jsr.io/@std/fs/1.0.24/_create_walk_entry.ts","time":1792173684}

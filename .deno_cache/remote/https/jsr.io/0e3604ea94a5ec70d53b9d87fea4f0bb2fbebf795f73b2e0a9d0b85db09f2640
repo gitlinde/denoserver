@@ -1,0 +1,45 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import type { GlobOptions } from "../_common/glob_to_reg_exp.ts";
+import { normalize } from "./normalize.ts";
+import { SEPARATOR_PATTERN } from "./constants.ts";
+
+export type { GlobOptions };
+
+/**
+ * Like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
+ *
+ * @example Usage
+ * ```ts
+ * import { normalizeGlob } from "@std/path/windows/normalize-glob";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const normalized = normalizeGlob("**\\foo\\..\\bar", { globstar: true });
+ * assertEquals(normalized, "**\\bar");
+ * ```
+ *
+ * @param glob The glob pattern to normalize.
+ * @param options The options for glob pattern.
+ * @returns The normalized glob pattern.
+ */
+export function normalizeGlob(
+  glob: string,
+  options: Pick<GlobOptions, "globstar"> = {},
+): string {
+  const { globstar = false }: GlobOptions = options;
+  if (glob.match(/\0/g)) {
+    throw new Error(`Glob contains invalid characters: "${glob}"`);
+  }
+  if (!globstar) {
+    return normalize(glob);
+  }
+  const s = SEPARATOR_PATTERN.source;
+  const badParentPattern = new RegExp(
+    `(?<=(${s}|^)\\*\\*${s})\\.\\.(?=${s}|$)`,
+    "g",
+  );
+  return normalize(glob.replace(badParentPattern, "\0")).replace(/\0/g, "..");
+}
+
+// denoCacheMetadata={"headers":{"content-length":"1309","accept-ranges":"bytes","access-control-allow-origin":"*","date":"Fri, 16 Oct 2026 18:01:24 GMT","cache-control":"public, max-age=31536000, immutable","vary":"accept-encoding, Origin","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","content-type":"text/typescript","etag":"\"a7d0ac197c658282f371e05b97edbfed\"","cross-origin-resource-policy":"cross-origin","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-encoding":"identity","set-cookie":"__cf_bm=sqo2haExJq9ip6zrylg8uqpGPtzqPSbrcH_CsXv8JF8-1792173684.295735-1.0.1.1-oPrXv7GWusjHrk8lgBYsLTEuoZMDHBDHOPyKAaanmP8OIqID3h5Usb077C0c9TiPXgqbt7bKTvFElbogFMNgliHsVLND92Rg_9A0fwRBehZkwxjWG1D7NkXfbalVjFyp; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=USGux3zS8aBgLXbR%2Fjkf%2FHYdlZ3pukhxa%2Fq%2F4qmyz0rmGEKy7EIgiQJ%2B516FacN5TEFtu7qYENB%2BWi1EGMOsHBbn1LbBOODZvp79F56FD8Ta%2BQbtuvuF3qc%3D\"}]}","access-control-expose-headers":"*","age":"4328953","server":"cloudflare","x-robots-tag":"noindex","alt-svc":"h3=\":443\"; ma=86400","cf-ray":"a4b8f7f69811b9cb-CPH","x-content-type-options":"nosniff","x-jsr-backend":"modules","cf-cache-status":"HIT"},"url":"https://jsr.io/@std/path/1.1.6/windows/normalize_glob.ts","time":1792173684}

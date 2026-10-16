@@ -1,0 +1,55 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { assertPath } from "./assert_path.ts";
+
+export function stripSuffix(name: string, suffix: string): string {
+  if (suffix.length >= name.length) {
+    return name;
+  }
+
+  const lenDiff = name.length - suffix.length;
+
+  for (let i = suffix.length - 1; i >= 0; --i) {
+    if (name.charCodeAt(lenDiff + i) !== suffix.charCodeAt(i)) {
+      return name;
+    }
+  }
+
+  return name.slice(0, -suffix.length);
+}
+
+export function lastPathSegment(
+  path: string,
+  isSep: (char: number) => boolean,
+  start = 0,
+): string {
+  let matchedNonSeparator = false;
+  let end = path.length;
+
+  for (let i = path.length - 1; i >= start; --i) {
+    if (isSep(path.charCodeAt(i))) {
+      if (matchedNonSeparator) {
+        start = i + 1;
+        break;
+      }
+    } else if (!matchedNonSeparator) {
+      matchedNonSeparator = true;
+      end = i + 1;
+    }
+  }
+
+  return path.slice(start, end);
+}
+
+export function assertArgs(path: string, suffix: string) {
+  assertPath(path);
+  if (path.length === 0) return path;
+  if (typeof suffix !== "string") {
+    throw new TypeError(
+      `Suffix must be a string, received "${JSON.stringify(suffix)}"`,
+    );
+  }
+}
+
+// denoCacheMetadata={"headers":{"date":"Fri, 16 Oct 2026 18:01:24 GMT","content-length":"1243","age":"4328952","cf-cache-status":"HIT","content-encoding":"identity","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=2WgJeA%2BoHEvEKIcTqUttckd8U8hguKi24Mr%2BiHz1LQ%2F3TAgWwY6UvzgzHYXuMq7PMKVNdJ6hpoQif8MpDbLPM9%2BK68OvysvHRnicmKSkQzIcEJtWgLAk8sQ%3D\"}]}","alt-svc":"h3=\":443\"; ma=86400","x-jsr-backend":"modules","access-control-expose-headers":"*","cf-ray":"a4b8f7f69812b9cb-CPH","server":"cloudflare","access-control-allow-origin":"*","set-cookie":"__cf_bm=a_MvQyJtcp.BsQt7EPML3gegpHf3axC2z784O7Vskwk-1792173684.2959986-1.0.1.1-MmO1PCxTuZGpDNKurhwzV_bPG0824tCZAzOJASpfMgPghKYaWG7d6moirPrMPOPvLWG8QxIRPzk4xAqAtcE2fMv9LlMu0_AMgEtMWIkjNrB8uIxj22KheV7cXK9RaqBI; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","accept-ranges":"bytes","etag":"\"f849375aecf5548ec25e683ff313fb9e\"","cache-control":"public, max-age=31536000, immutable","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","cross-origin-resource-policy":"cross-origin","x-content-type-options":"nosniff","x-robots-tag":"noindex","content-type":"text/typescript","vary":"accept-encoding, Origin"},"url":"https://jsr.io/@std/path/1.1.6/_common/basename.ts","time":1792173684}

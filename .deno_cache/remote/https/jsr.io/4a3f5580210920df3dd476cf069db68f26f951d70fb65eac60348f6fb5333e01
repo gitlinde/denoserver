@@ -1,0 +1,36 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { assertArg } from "../_common/from_file_url.ts";
+
+/**
+ * Converts a file URL to a path string.
+ *
+ * @example Usage
+ * ```ts
+ * import { fromFileUrl } from "@std/path/windows/from-file-url";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(fromFileUrl("file:///home/foo"), "\\home\\foo");
+ * assertEquals(fromFileUrl("file:///C:/Users/foo"), "C:\\Users\\foo");
+ * assertEquals(fromFileUrl("file://localhost/home/foo"), "\\home\\foo");
+ * ```
+ *
+ * @param url The file URL to convert.
+ * @returns The path string.
+ */
+export function fromFileUrl(url: URL | string): string {
+  url = assertArg(url);
+  let path = decodeURIComponent(
+    url.pathname.replace(/\//g, "\\").replace(/%(?![0-9A-Fa-f]{2})/g, "%25"),
+  ).replace(/^\\*([A-Za-z]:)(\\|$)/, "$1\\");
+  if (url.hostname !== "") {
+    // Note: The `URL` implementation guarantees that the drive letter and
+    // hostname are mutually exclusive. Otherwise it would not have been valid
+    // to append the hostname and path like this.
+    path = `\\\\${url.hostname}${path}`;
+  }
+  return path;
+}
+
+// denoCacheMetadata={"headers":{"accept-ranges":"bytes","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-jsr-backend":"modules","content-encoding":"identity","etag":"\"36eb0e4e7e976b1d121055e485732f2e\"","cf-ray":"a4b8f7f69ff7b9cb-CPH","age":"4328953","access-control-expose-headers":"*","cross-origin-resource-policy":"cross-origin","x-content-type-options":"nosniff","content-length":"1168","content-type":"text/typescript","vary":"accept-encoding, Origin","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","access-control-allow-origin":"*","cache-control":"public, max-age=31536000, immutable","set-cookie":"__cf_bm=dSk5CNmmk8_6foF4KarghJmgjfUa943SUiG1p9wjA9E-1792173684.2915444-1.0.1.1-k6XwxdAzMZ_y11ZDgGvZt7wpEQ7E1t6ta9Al6hpVrQh0djQ_QkAY6xy55w5TLL1ngqOSEJHFf.wHF34vFsx90hDIaVeiQzqoyg8Nj6OEgbnxbNlh5T.acQYxRl9kG17W; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","server":"cloudflare","x-robots-tag":"noindex","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Bft1vhxosMpRV3x0j%2FqR7Ob%2BHitGjVDB4jRHckTtEiUAPOI8p746k4GerJ8aeU15jLgzindP52pmimZ4gnNHGRZ2FJF7Um8hFk0mdYavGGCmj7MwNvzsWPA%3D\"}]}","alt-svc":"h3=\":443\"; ma=86400","cf-cache-status":"HIT","date":"Fri, 16 Oct 2026 18:01:24 GMT"},"url":"https://jsr.io/@std/path/1.1.6/windows/from_file_url.ts","time":1792173684}

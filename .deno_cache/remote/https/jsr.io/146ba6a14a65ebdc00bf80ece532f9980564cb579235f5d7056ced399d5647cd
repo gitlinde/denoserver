@@ -1,0 +1,25 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// Copyright the Browserify authors. MIT License.
+
+export type PathType = "file" | "dir" | "symlink";
+
+/**
+ * Get a human readable file type string.
+ *
+ * @param file File information, as returned by {@linkcode Deno.stat} or
+ * {@linkcode Deno.lstat}.
+ *
+ * @returns The file type as a string, or `undefined` if the file type is
+ * unknown.
+ */
+export function getFileInfoType(fileInfo: Deno.FileInfo): PathType | undefined {
+  return fileInfo.isFile
+    ? "file"
+    : fileInfo.isDirectory
+    ? "dir"
+    : fileInfo.isSymlink
+    ? "symlink"
+    : undefined;
+}
+
+// denoCacheMetadata={"headers":{"access-control-allow-origin":"*","content-length":"617","content-type":"text/typescript","etag":"\"1d1876ef619f0fd3ff25cb0f712302a9\"","content-encoding":"identity","access-control-expose-headers":"*","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-robots-tag":"noindex","vary":"accept-encoding, Origin","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"HIT","alt-svc":"h3=\":443\"; ma=86400","date":"Fri, 16 Oct 2026 18:01:24 GMT","age":"1921315","cache-control":"public, max-age=31536000, immutable","cross-origin-resource-policy":"cross-origin","accept-ranges":"bytes","server":"cloudflare","x-content-type-options":"nosniff","set-cookie":"__cf_bm=Y7Fkjvn3FN3UCfp.J.0wd39rTUOqIZZ2BCPSiAZrEiw-1792173684.2660177-1.0.1.1-CE4eJwgKtLSkfJJpWvqVaCQ7GGw3oX6RkS98a6AzrBSjHmzRNeul71SZixfAOcqezD3fxxpuBBmg.Bt96oyF4o.nCxY27Wxg1IUyYHvM6sIomIPTH2LSEUfFgvu4p4Cv; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=u5zAagop6YC8wkwPkpQQ%2B27GalvnagR9Qb%2Bd2VxFlpnbfxBU0sLqDQU7nBX41OwXHHOPq2Mpew7f%2FWy6tuHvdKM2TyambzqEADY0DKI23Ak%2FbSDr1LhKuYA%3D\"}]}","x-jsr-backend":"modules","cf-ray":"a4b8f7f69f82b9cb-CPH"},"url":"https://jsr.io/@std/fs/1.0.24/_get_file_info_type.ts","time":1792173684}

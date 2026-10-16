@@ -1,0 +1,91 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+import { join } from "jsr:@std/path@^1.1.5/join";
+import { toPathString } from "./_to_path_string.ts";
+
+/**
+ * Asynchronously ensures that a directory is empty.
+ *
+ * If the directory does not exist, it is created. The directory itself is not
+ * deleted.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param dir The path of the directory to empty, as a string or URL.
+ *
+ * @returns A void promise that resolves once the directory is empty.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { emptyDir } from "@std/fs/empty-dir";
+ *
+ * await emptyDir("./foo");
+ * ```
+ */
+export async function emptyDir(dir: string | URL) {
+  try {
+    const items = await Array.fromAsync(Deno.readDir(dir));
+
+    await Promise.all(items.map((item) => {
+      if (item && item.name) {
+        const filepath = join(toPathString(dir), item.name);
+        return Deno.remove(filepath, { recursive: true });
+      }
+    }));
+  } catch (err) {
+    if (!(err instanceof Deno.errors.NotFound)) {
+      throw err;
+    }
+
+    // if not exist. then create it
+    await Deno.mkdir(dir, { recursive: true });
+  }
+}
+
+/**
+ * Synchronously ensures that a directory is empty deletes the directory
+ * contents it is not empty.
+ *
+ * If the directory does not exist, it is created. The directory itself is not
+ * deleted.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param dir The path of the directory to empty, as a string or URL.
+ *
+ * @returns A void value that returns once the directory is empty.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { emptyDirSync } from "@std/fs/empty-dir";
+ *
+ * emptyDirSync("./foo");
+ * ```
+ */
+export function emptyDirSync(dir: string | URL) {
+  try {
+    const items = [...Deno.readDirSync(dir)];
+
+    // If the directory exists, remove all entries inside it.
+    while (items.length) {
+      const item = items.shift();
+      if (item && item.name) {
+        const filepath = join(toPathString(dir), item.name);
+        Deno.removeSync(filepath, { recursive: true });
+      }
+    }
+  } catch (err) {
+    if (!(err instanceof Deno.errors.NotFound)) {
+      throw err;
+    }
+    // if not exist. then create it
+    Deno.mkdirSync(dir, { recursive: true });
+  }
+}
+
+// denoCacheMetadata={"headers":{"content-type":"text/typescript","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=frZS3RwxDLwW7n8BNrlqU6CuKxGNHa887Sr46YpCUqTcQ2nZu9%2FNloXf39cjrIp7Sb82cDYW0SYsftj4gvO6OI%2FYnLmPO9oqgr7fykzXf9ZXYZMK3oMJFWQ%3D\"}]}","cf-cache-status":"HIT","x-content-type-options":"nosniff","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","cross-origin-resource-policy":"cross-origin","date":"Fri, 16 Oct 2026 18:01:24 GMT","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","age":"4314917","cache-control":"public, max-age=31536000, immutable","cf-ray":"a4b8f7f69f69b9cb-CPH","x-robots-tag":"noindex","set-cookie":"__cf_bm=FT90agfsMtUrdPKsPLaQdol1ErTj5fxC89A.MRYgMqE-1792173684.2591383-1.0.1.1-zDPk.vYyKD.uJU1XmqNurk7_a3K60zAwJMiuC9xy_FlF.w9n88oF4ZoPMXzb0nfvOg1U_kicRMp.0ybAyGFgWYBBViAEzoOFYTz2mlxcfx.ei01u8BWi3wMvmHXoW8Ik; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","content-encoding":"identity","vary":"accept-encoding, Origin","etag":"\"599b323fc5cfcb274ead3e643cbbac40\"","access-control-expose-headers":"*","accept-ranges":"bytes","access-control-allow-origin":"*","x-jsr-backend":"modules","content-length":"2563","alt-svc":"h3=\":443\"; ma=86400","server":"cloudflare"},"url":"https://jsr.io/@std/fs/1.0.24/empty_dir.ts","time":1792173684}

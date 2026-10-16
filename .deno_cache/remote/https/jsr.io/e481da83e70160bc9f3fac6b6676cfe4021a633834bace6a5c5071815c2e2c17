@@ -1,0 +1,100 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+import { dirname } from "jsr:@std/path@^1.1.5/dirname";
+import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
+import { getFileInfoType } from "./_get_file_info_type.ts";
+import { toPathString } from "./_to_path_string.ts";
+
+/**
+ * Asynchronously ensures that the file exists.
+ *
+ * If the file already exists, this function does nothing. If the parent
+ * directories for the file do not exist, they are created.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param filePath The path of the file to ensure, as a string or URL.
+ *
+ * @returns A void promise that resolves once the file exists.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { ensureFile } from "@std/fs/ensure-file";
+ *
+ * await ensureFile("./folder/targetFile.dat");
+ * ```
+ */
+export async function ensureFile(filePath: string | URL): Promise<void> {
+  try {
+    // if file exists
+    const stat = await Deno.lstat(filePath);
+    if (!stat.isFile) {
+      throw new Error(
+        `Failed to ensure file exists: expected 'file', got '${
+          getFileInfoType(stat)
+        }'`,
+      );
+    }
+  } catch (err) {
+    // if file not exists
+    if (err instanceof Deno.errors.NotFound) {
+      // ensure dir exists
+      await ensureDir(dirname(toPathString(filePath)));
+      // create file
+      await Deno.writeFile(filePath, new Uint8Array());
+      return;
+    }
+
+    throw err;
+  }
+}
+
+/**
+ * Synchronously ensures that the file exists.
+ *
+ * If the file already exists, this function does nothing. If the parent
+ * directories for the file do not exist, they are created.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param filePath The path of the file to ensure, as a string or URL.
+ *
+ * @returns A void value that returns once the file exists.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { ensureFileSync } from "@std/fs/ensure-file";
+ *
+ * ensureFileSync("./folder/targetFile.dat");
+ * ```
+ */
+export function ensureFileSync(filePath: string | URL): void {
+  try {
+    // if file exists
+    const stat = Deno.lstatSync(filePath);
+    if (!stat.isFile) {
+      throw new Error(
+        `Failed to ensure file exists: expected 'file', got '${
+          getFileInfoType(stat)
+        }'`,
+      );
+    }
+  } catch (err) {
+    // if file not exists
+    if (err instanceof Deno.errors.NotFound) {
+      // ensure dir exists
+      ensureDirSync(dirname(toPathString(filePath)));
+      // create file
+      Deno.writeFileSync(filePath, new Uint8Array());
+      return;
+    }
+    throw err;
+  }
+}
+
+// denoCacheMetadata={"headers":{"report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=qlczU1QT2%2B7s5UooaM5zbjZYYFQqdwaA5IGgA3V4XQxVs9uikASC0YGOQQ6J7NlupdciIVtd4u3GyH37wHzHJm%2BDUcNRUNSlXgouEivWpoHTTc2Sc8r4rXU%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","access-control-allow-origin":"*","content-length":"2873","x-content-type-options":"nosniff","server":"cloudflare","x-jsr-backend":"modules","x-robots-tag":"noindex","content-encoding":"identity","cf-cache-status":"HIT","cache-control":"public, max-age=31536000, immutable","vary":"accept-encoding, Origin","accept-ranges":"bytes","set-cookie":"__cf_bm=mmYcEFBIf4a1VVKvZYFukKtOcYVTM5wn.cT4IKnAHjM-1792173684.260787-1.0.1.1-Xka3oX5vPgyfkg37YyNYT4KjJSqBbynrcySn2q1AD7ykK3Bwl804KBWXFhqgYIhW51MJWsmd9b3P3R_5ZKdK5hPLB24P0hgUcs9DGqFKCZ_jGnLy48K9CLZMWpdxzy2Z; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","cross-origin-resource-policy":"cross-origin","alt-svc":"h3=\":443\"; ma=86400","date":"Fri, 16 Oct 2026 18:01:24 GMT","age":"4314917","content-type":"text/typescript","cf-ray":"a4b8f7f69f6db9cb-CPH","etag":"\"970934f2248d88897872f227cc141a48\"","access-control-expose-headers":"*","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';"},"url":"https://jsr.io/@std/fs/1.0.24/ensure_file.ts","time":1792173684}

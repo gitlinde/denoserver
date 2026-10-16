@@ -1,0 +1,75 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+/** End-of-line character for POSIX platforms such as macOS and Linux. */
+export const LF = "\n" as const;
+
+/** End-of-line character for Windows platforms. */
+export const CRLF = "\r\n" as const;
+
+/**
+ * End-of-line character evaluated for the current platform.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { EOL } from "@std/fs/eol";
+ *
+ * EOL; // "\n" on POSIX platforms and "\r\n" on Windows
+ * ```
+ */
+export const EOL: "\n" | "\r\n" =
+  // deno-lint-ignore no-explicit-any
+  (globalThis as any).Deno?.build.os === "windows" ? CRLF : LF;
+
+const regDetect = /(?:\r?\n)/g;
+
+/**
+ * Returns the detected EOL character(s) detected in the input string. If no EOL
+ * character is detected, `null` is returned.
+ *
+ * @param content The input string to detect EOL characters.
+ *
+ * @returns The detected EOL character(s) or `null` if no EOL character is detected.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { detect } from "@std/fs/eol";
+ *
+ * detect("deno\r\nis not\r\nnode"); // "\r\n"
+ * detect("deno\nis not\r\nnode"); // "\r\n"
+ * detect("deno\nis not\nnode"); // "\n"
+ * detect("deno is not node"); // null
+ * ```
+ */
+export function detect(content: string): typeof EOL | null {
+  const d = content.match(regDetect);
+  if (!d || d.length === 0) {
+    return null;
+  }
+  const hasCRLF = d.some((x: string): boolean => x === CRLF);
+
+  return hasCRLF ? CRLF : LF;
+}
+
+/**
+ * Normalize the input string to the targeted EOL.
+ *
+ * @param content The input string to normalize.
+ * @param eol The EOL character(s) to normalize the input string to.
+ *
+ * @returns The input string normalized to the targeted EOL.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { LF, format } from "@std/fs/eol";
+ *
+ * const CRLFinput = "deno\r\nis not\r\nnode";
+ *
+ * format(CRLFinput, LF); // "deno\nis not\nnode"
+ * ```
+ */
+export function format(content: string, eol: typeof EOL): string {
+  return content.replace(regDetect, eol);
+}
+
+// denoCacheMetadata={"headers":{"accept-ranges":"bytes","server":"cloudflare","date":"Fri, 16 Oct 2026 18:01:24 GMT","vary":"accept-encoding, Origin","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=86400","cross-origin-resource-policy":"cross-origin","content-encoding":"identity","set-cookie":"__cf_bm=vxeryA8s32XGgs4fwxyK.O.delXyDXD8ARO3eJ_UT4w-1792173684.265099-1.0.1.1-vlDb5b.kU4Ii6NARw.TcXEl4eivavx3vXDXzVLUny7Y7Xb21dEaAt_iSXCPi647Y76iugOex9foxNGh5L82KLm4VszcSbcxY2QgewYmB6Odri1sSnfPLiY3zy4KCUhhm; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","access-control-allow-origin":"*","etag":"\"687a838f9955d323b494f9fbdcd1f630\"","x-jsr-backend":"modules","cf-cache-status":"HIT","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=dLsPVN15eD8xLqUuWoo4YzcmYNZLllQ%2BdquVwsCulYb%2FEpGdd7vLjIpanNQZyMjDe0mSqxOaHgKQnfp50WElmVPsifJa%2FVIILjCHxID1V1h2XWm72SjNfEw%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-length":"2012","cache-control":"public, max-age=31536000, immutable","age":"4314917","cf-ray":"a4b8f7f69f7fb9cb-CPH","content-type":"text/typescript","access-control-expose-headers":"*","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-robots-tag":"noindex"},"url":"https://jsr.io/@std/fs/1.0.24/eol.ts","time":1792173684}

@@ -1,0 +1,33 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+
+/**
+ * Helpers for working with the filesystem.
+ *
+ * ```ts ignore
+ * import { ensureFile, copy, ensureDir, move } from "@std/fs";
+ *
+ * await ensureFile("example.txt");
+ *
+ * await copy("example.txt", "example_copy.txt");
+ *
+ * await ensureDir("subdir");
+ *
+ * await move("example_copy.txt", "subdir/example_copy.txt");
+ * ```
+ *
+ * @module
+ */
+
+export * from "./empty_dir.ts";
+export * from "./ensure_dir.ts";
+export * from "./ensure_file.ts";
+export * from "./ensure_link.ts";
+export * from "./ensure_symlink.ts";
+export * from "./exists.ts";
+export * from "./expand_glob.ts";
+export * from "./move.ts";
+export * from "./copy.ts";
+export * from "./walk.ts";
+export * from "./eol.ts";
+
+// denoCacheMetadata={"headers":{"report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=nBYK7LjzWhE2dHdpc0RbMY3eJxfqoz2578fnuA3OlMd84wIdhabn7HFz%2F8aWn1VvPu8r9etoZdeVFWIQbUT7I4sNpkBtcRPHHV2m4G1hqxtQAD7sHgzPiuE%3D\"}]}","etag":"\"dcccd8eb1654d1377b4f7ee5617e8321\"","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-type":"text/typescript","cache-control":"public, max-age=31536000, immutable","x-jsr-backend":"modules","cross-origin-resource-policy":"cross-origin","access-control-allow-origin":"*","vary":"accept-encoding, Origin","content-length":"742","cf-ray":"a4b8f7f69f61b9cb-CPH","x-robots-tag":"noindex","set-cookie":"__cf_bm=QEZ2T7qJ6ml_GX.qyug..iOGqE6nkZqk2lKRgbsB8sc-1792173684.2560856-1.0.1.1-EVzeLKzZpXOKdJ6SfGZhgJASerZaXqzft09vc3nBW6kNBtimKuCRm9J4zhyxCpgJU1IwxfdQgW2.Cb6QgI1IkfztaS8Q1Skdt_2em2BLeSsznWmihenaU2NP3RZsii.H; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","age":"4314917","content-encoding":"identity","access-control-expose-headers":"*","x-content-type-options":"nosniff","cf-cache-status":"HIT","server":"cloudflare","alt-svc":"h3=\":443\"; ma=86400","date":"Fri, 16 Oct 2026 18:01:24 GMT","accept-ranges":"bytes","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';"},"url":"https://jsr.io/@std/fs/1.0.24/mod.ts","time":1792173684}

@@ -1,0 +1,35 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { isWindows } from "jsr:@std/internal@^1.0.14/os";
+import { dirname as posixDirname } from "./posix/dirname.ts";
+import { dirname as windowsDirname } from "./windows/dirname.ts";
+
+/**
+ * Return the directory path of a path.
+ *
+ * @example Usage
+ * ```ts
+ * import { dirname } from "@std/path/dirname";
+ * import { assertEquals } from "@std/assert";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(dirname("C:\\home\\user\\Documents\\image.png"), "C:\\home\\user\\Documents");
+ *   assertEquals(dirname(new URL("file:///C:/home/user/Documents/image.png")), "C:\\home\\user\\Documents");
+ * } else {
+ *   assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
+ *   assertEquals(dirname(new URL("file:///home/user/Documents/image.png")), "/home/user/Documents");
+ * }
+ * ```
+ *
+ * @param path Path to extract the directory from. When passed as a `URL`
+ * instance, its protocol must be `file:`. For other protocols, pass the URL
+ * as a string or pass its `pathname` property.
+ * @returns The directory path.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
+ */
+export function dirname(path: string | URL): string {
+  return isWindows ? windowsDirname(path) : posixDirname(path);
+}
+
+// denoCacheMetadata={"headers":{"date":"Fri, 16 Oct 2026 18:01:24 GMT","content-length":"1351","content-encoding":"identity","vary":"accept-encoding, Origin","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","set-cookie":"__cf_bm=BGDXKuxQieFRI6Y6hjU9G5CXBF1tdRepSbU7i0wpZzs-1792173684.2801988-1.0.1.1-MYj9ZbKlzDQHwwK_KIcC_RbxFF8vfsw9822j2M_CGOlCfrSJsbsu.Agg0_cfCl7VLeMENDfNG2_9hYetB7ODTVTs_Mr8V6vlEreQOopIQ3RLBa5zDiAAfPwS5dXJ96FN; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","access-control-allow-origin":"*","etag":"\"17b44b47034388524c13382ebc8fa673\"","access-control-expose-headers":"*","x-content-type-options":"nosniff","x-robots-tag":"noindex","alt-svc":"h3=\":443\"; ma=86400","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cross-origin-resource-policy":"cross-origin","cf-ray":"a4b8f7f69fbab9cb-CPH","accept-ranges":"bytes","content-type":"text/typescript","cf-cache-status":"HIT","age":"4328953","cache-control":"public, max-age=31536000, immutable","server":"cloudflare","x-jsr-backend":"modules","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=eFpwqpwRog2nm4FXi2d2d5VVBI0U9kLzdXGJDX6Q%2BsaTSOdWOB8WIst46yQ9AuiV6ggSm2iqPZrZhsR83iWVJ1Ec0%2BSu9nXpb67JPqJWOSlyBHI%2Buhenbs4%3D\"}]}"},"url":"https://jsr.io/@std/path/1.1.6/dirname.ts","time":1792173684}

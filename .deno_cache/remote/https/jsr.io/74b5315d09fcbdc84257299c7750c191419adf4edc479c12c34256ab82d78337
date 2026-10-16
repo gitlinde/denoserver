@@ -1,0 +1,42 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { isWindows } from "jsr:@std/internal@^1.0.14/os";
+import { basename as posixBasename } from "./posix/basename.ts";
+import { basename as windowsBasename } from "./windows/basename.ts";
+
+/**
+ * Return the last portion of a path.
+ *
+ * The trailing directory separators are ignored, and optional suffix is
+ * removed.
+ *
+ * @example Usage
+ * ```ts
+ * import { basename } from "@std/path/basename";
+ * import { assertEquals } from "@std/assert";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");
+ *   assertEquals(basename(new URL("file:///C:/user/Documents/image.png")), "image.png");
+ * } else {
+ *   assertEquals(basename("/home/user/Documents/image.png"), "image.png");
+ *   assertEquals(basename(new URL("file:///home/user/Documents/image.png")), "image.png");
+ * }
+ * ```
+ *
+ * @param path Path to extract the name from. When passed as a `URL`
+ * instance, its protocol must be `file:`. For other protocols, pass the URL
+ * as a string or pass its `pathname` property.
+ * @param suffix Suffix to remove from extracted name.
+ *
+ * @returns The basename of the path.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
+ */
+export function basename(path: string | URL, suffix = ""): string {
+  return isWindows
+    ? windowsBasename(path, suffix)
+    : posixBasename(path, suffix);
+}
+
+// denoCacheMetadata={"headers":{"server":"cloudflare","content-type":"text/typescript","accept-ranges":"bytes","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-jsr-backend":"modules","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=wYkKieFZgj6ZwVv3OUZ0cBleizEg7TimbcQJHJiup4J0ByAPO3gE6%2FR0xRLIdt5Mz85mieJLP4QxU4sNLW%2BBCN8l6YE5Sf3NxwpFBO26KW%2BZcxscF4HpeFU%3D\"}]}","alt-svc":"h3=\":443\"; ma=86400","etag":"\"f8429ef5e523cbdeeb5ca35f7015b4d4\"","cache-control":"public, max-age=31536000, immutable","content-length":"1483","content-encoding":"identity","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","set-cookie":"__cf_bm=S.nquKzp.CAgiKdxB4TIRMLIjDp7GuNZrEsGGXLVcpQ-1792173684.2813528-1.0.1.1-UBSglg0.KWmEev2cDjHPyyhR74rUZ03GOG70G7bxFXLaA_DDSVU6oRz4KV1W8i1oyv4RWrpUUlk0f2brjymzOuOHRANwJQKDnA8Sd.5jIK.GsBUOG9GuLKiv7Y43ptbA; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","vary":"accept-encoding, Origin","date":"Fri, 16 Oct 2026 18:01:24 GMT","access-control-expose-headers":"*","cf-ray":"a4b8f7f69fc1b9cb-CPH","access-control-allow-origin":"*","cross-origin-resource-policy":"cross-origin","age":"4328952","x-content-type-options":"nosniff","x-robots-tag":"noindex","cf-cache-status":"HIT"},"url":"https://jsr.io/@std/path/1.1.6/basename.ts","time":1792173684}

@@ -1,0 +1,66 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+import { dirname } from "jsr:@std/path@^1.1.5/dirname";
+import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
+import { toPathString } from "./_to_path_string.ts";
+
+/**
+ * Asynchronously ensures that the hard link exists.
+ *
+ * If the parent directories for the hard link do not exist, they are created.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param src The source file path as a string or URL. Directory hard links are
+ * not allowed.
+ * @param dest The destination link path as a string or URL.
+ *
+ * @returns A void promise that resolves once the hard link exists.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { ensureLink } from "@std/fs/ensure-link";
+ *
+ * await ensureLink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
+ * ```
+ */
+export async function ensureLink(src: string | URL, dest: string | URL) {
+  dest = toPathString(dest);
+  await ensureDir(dirname(dest));
+
+  await Deno.link(toPathString(src), dest);
+}
+
+/**
+ * Synchronously ensures that the hard link exists.
+ *
+ * If the parent directories for the hard link do not exist, they are created.
+ *
+ * Requires `--allow-read` and `--allow-write` permissions.
+ *
+ * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
+ * for more information on Deno's permissions system.
+ *
+ * @param src The source file path as a string or URL. Directory hard links are
+ * not allowed.
+ * @param dest The destination link path as a string or URL.
+ *
+ * @returns A void value that returns once the hard link exists.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { ensureLinkSync } from "@std/fs/ensure-link";
+ *
+ * ensureLinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat");
+ * ```
+ */
+export function ensureLinkSync(src: string | URL, dest: string | URL) {
+  dest = toPathString(dest);
+  ensureDirSync(dirname(dest));
+
+  Deno.linkSync(toPathString(src), dest);
+}
+
+// denoCacheMetadata={"headers":{"x-jsr-backend":"modules","x-robots-tag":"noindex","cross-origin-resource-policy":"cross-origin","cache-control":"public, max-age=31536000, immutable","x-content-type-options":"nosniff","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","date":"Fri, 16 Oct 2026 18:01:24 GMT","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=B9ny8v%2Fw36UkiP3bFRqc4LTvp%2FRJcfJu0gsLI5JnQsyL0WEli6RHz65QKVt4HoutDYald3qPKiZtgT7UYUyIm0rrESVGSTOXFAa7OdJNfmYbML6g1uuiUV0%3D\"}]}","access-control-expose-headers":"*","set-cookie":"__cf_bm=UpsSgjjS_6X0aNrA9ivD9BVOVAU5ilcBtm.rs90vXOU-1792173684.2613933-1.0.1.1-MNyPj7CTSpsO0_xhYSv.W99eZYJiRbWqvV6fcoH.QNLqIrey5gAdPRyNJgs0QUo0_YpPcgDGvFSk2osHLMf2cAuzpIP3lVP0n4yh6sNGtwWeBOXokdmIFbuOYesvmu8i; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","content-type":"text/typescript","content-encoding":"identity","cf-ray":"a4b8f7f69f71b9cb-CPH","vary":"accept-encoding, Origin","age":"4314917","accept-ranges":"bytes","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","alt-svc":"h3=\":443\"; ma=86400","cf-cache-status":"HIT","content-length":"2115","access-control-allow-origin":"*","server":"cloudflare","etag":"\"8f7cda3e38908ab0f86f8bd436374ac8\""},"url":"https://jsr.io/@std/fs/1.0.24/ensure_link.ts","time":1792173684}

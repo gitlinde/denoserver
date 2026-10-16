@@ -1,0 +1,30 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// Copyright the Browserify authors. MIT License.
+// Ported from https://github.com/browserify/path-browserify/
+// This module is browser compatible.
+
+import {
+  CHAR_BACKWARD_SLASH,
+  CHAR_FORWARD_SLASH,
+  CHAR_LOWERCASE_A,
+  CHAR_LOWERCASE_Z,
+  CHAR_UPPERCASE_A,
+  CHAR_UPPERCASE_Z,
+} from "../_common/constants.ts";
+
+export function isPosixPathSeparator(code: number): boolean {
+  return code === CHAR_FORWARD_SLASH;
+}
+
+export function isPathSeparator(code: number): boolean {
+  return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
+}
+
+export function isWindowsDeviceRoot(code: number): boolean {
+  return (
+    (code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z) ||
+    (code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z)
+  );
+}
+
+// denoCacheMetadata={"headers":{"content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"HIT","access-control-allow-origin":"*","content-encoding":"identity","x-content-type-options":"nosniff","date":"Fri, 16 Oct 2026 18:01:24 GMT","x-robots-tag":"noindex","cross-origin-resource-policy":"cross-origin","set-cookie":"__cf_bm=qppTxhk2kirGtChCrPoM0awKgrGHWnd7SC.ZW_w_CvQ-1792173684.2929535-1.0.1.1-_PZWs3KzxGxe8duiqBWjqkugCnjhZ7JNMyNSXZ4CuVYTXPOITAtE1WejGx75k3e4JBMALpw8j6G3JuqPyV_xt8Phxh_BSD9BN83NN6XG.0guaRaA7vZ9dCVs6HbOBFhU; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","cf-ray":"a4b8f7f69fffb9cb-CPH","x-jsr-backend":"modules","content-type":"text/typescript","age":"4328952","cache-control":"public, max-age=31536000, immutable","accept-ranges":"bytes","content-length":"807","server":"cloudflare","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=46yDciin3nn3JL3yXwbXcXeLlJw8ssRQL86f%2FNo9tm6Xu9QX2lznSgcdVh6vli29aR80%2FSp53P4KljXftXVKFO0SBxUoxUsk09p6bLzM7fjZ3ByesprPwtY%3D\"}]}","vary":"accept-encoding, Origin","access-control-expose-headers":"*","alt-svc":"h3=\":443\"; ma=86400","etag":"\"2fd4bf5ac14b88982939add073314f74\""},"url":"https://jsr.io/@std/path/1.1.6/windows/_util.ts","time":1792173684}

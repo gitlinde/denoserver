@@ -1,0 +1,34 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { isWindows } from "jsr:@std/internal@^1.0.14/os";
+import { extname as posixExtname } from "./posix/extname.ts";
+import { extname as windowsExtname } from "./windows/extname.ts";
+/**
+ * Return the extension of the path with leading period (".").
+ *
+ * @example Usage
+ * ```ts
+ * import { extname } from "@std/path/extname";
+ * import { assertEquals } from "@std/assert";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(extname("C:\\home\\user\\Documents\\image.png"), ".png");
+ *   assertEquals(extname(new URL("file:///C:/home/user/Documents/image.png")), ".png");
+ * } else {
+ *   assertEquals(extname("/home/user/Documents/image.png"), ".png");
+ *   assertEquals(extname(new URL("file:///home/user/Documents/image.png")), ".png");
+ * }
+ * ```
+ *
+ * @param path Path with extension. When passed as a `URL` instance, its
+ * protocol must be `file:`. For other protocols, pass the URL as a string or
+ * pass its `pathname` property.
+ * @returns The file extension. E.g. returns `.ts` for `file.ts`.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
+ */
+export function extname(path: string | URL): string {
+  return isWindows ? windowsExtname(path) : posixExtname(path);
+}
+
+// denoCacheMetadata={"headers":{"cf-cache-status":"HIT","x-content-type-options":"nosniff","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","alt-svc":"h3=\":443\"; ma=86400","x-jsr-backend":"modules","content-type":"text/typescript","x-robots-tag":"noindex","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=UXezcTnWQJK0f5XC5GbI1FMRgnvBcyw5kPQBbDhFawnUBmCny3QfAMWBpunR54zT1FOK6sSIvDiLEw913MxK3Swt5pmMzDLgsCpZZtx6OrKtaqycEPOIwYI%3D\"}]}","age":"4328953","vary":"accept-encoding, Origin","server":"cloudflare","cache-control":"public, max-age=31536000, immutable","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","content-length":"1318","accept-ranges":"bytes","etag":"\"f432b72a97080d2f26e05995df46d436\"","date":"Fri, 16 Oct 2026 18:01:24 GMT","cf-ray":"a4b8f7f69f90b9cb-CPH","content-encoding":"identity","cross-origin-resource-policy":"cross-origin","access-control-expose-headers":"*","set-cookie":"__cf_bm=wSK68NLxzoRfI8_kPJIet7LXoF9gRRmW4.1VZCgjxQ4-1792173684.268853-1.0.1.1-WFmPVV3PG6KXlUdQpUeemKa77KPkmFl7ATK68uzlFXzOR7MuhLTumgzl0puXCgNHpMdJLhhHEBCWP3ZzT9YMnK_8TdrEjh1GjGj79dGsggCfgJlE0F5bScNBga8sf5M6; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","access-control-allow-origin":"*"},"url":"https://jsr.io/@std/path/1.1.6/extname.ts","time":1792173684}

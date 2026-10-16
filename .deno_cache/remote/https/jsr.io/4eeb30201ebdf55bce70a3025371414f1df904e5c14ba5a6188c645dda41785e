@@ -1,0 +1,32 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { isWindows } from "jsr:@std/internal@^1.0.14/os";
+import { isAbsolute as posixIsAbsolute } from "./posix/is_absolute.ts";
+import { isAbsolute as windowsIsAbsolute } from "./windows/is_absolute.ts";
+
+/**
+ * Verifies whether provided path is absolute.
+ *
+ * @example Usage
+ * ```ts
+ * import { isAbsolute } from "@std/path/is-absolute";
+ * import { assert, assertFalse } from "@std/assert";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assert(isAbsolute("C:\\home\\foo"));
+ *   assertFalse(isAbsolute("home\\foo"));
+ * } else {
+ *   assert(isAbsolute("/home/foo"));
+ *   assertFalse(isAbsolute("home/foo"));
+ * }
+ * ```
+ *
+ * @param path Path to be verified as absolute.
+ * @returns `true` if path is absolute, `false` otherwise
+ */
+export function isAbsolute(path: string): boolean {
+  return isWindows ? windowsIsAbsolute(path) : posixIsAbsolute(path);
+}
+
+// denoCacheMetadata={"headers":{"content-encoding":"identity","cf-cache-status":"HIT","server":"cloudflare","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","date":"Fri, 16 Oct 2026 18:01:24 GMT","accept-ranges":"bytes","content-length":"957","access-control-allow-origin":"*","cf-ray":"a4b8f7f69f92b9cb-CPH","age":"4328953","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=86400","vary":"accept-encoding, Origin","cross-origin-resource-policy":"cross-origin","content-type":"text/typescript","cache-control":"public, max-age=31536000, immutable","x-jsr-backend":"modules","etag":"\"de2cf152e4eb8cbf095c024fc5c2e61c\"","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=qvxZtODYcKRl8fw9n5MDA6kJoq4Ik%2FQk%2FtKqbNze1G1S%2BYKKGdztyO8ASc2NH7UFEPx0yXBiPWi66SulblkLyLvUkv2%2BUIZj2ZUVQg%2FC%2Fd3xs%2FVtv9470Mo%3D\"}]}","access-control-expose-headers":"*","set-cookie":"__cf_bm=ykM7p1gWwCP6xCqK38opJLhZYQ9n3U3OE8y0KEXJ4Do-1792173684.2691476-1.0.1.1-jgHAJF_jyfKXHqE4uWW_Vpg8yTrUos_o6RNXqhPCaOKiLjbgsrVGUMvGcBrb8JCIGjsTXxv1UOSCbCUK665qde6P1_4.kikAkEYds5vkErq5ZIKLnI7C3WcQxK75YlRJ; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","x-robots-tag":"noindex"},"url":"https://jsr.io/@std/path/1.1.6/is_absolute.ts","time":1792173684}

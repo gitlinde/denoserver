@@ -25,9 +25,9 @@ const REFRESH_RATE = 4;
 const MAX_REQUESTS = 5;
 const buckets = new Map<string, Bucket>;
 
-init();
-function init() {
-
+await init();
+async function init() {
+    await writeGeneratedHtmlToDisk();
     const cleanBucketMemory = setInterval(() => {
         const cutoff = Date.now() - (REFRESH_RATE * 1000) * MAX_REQUESTS;
         for(const [ip, bucket] of buckets) {

@@ -1,0 +1,50 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import db from "./vendor/db.ts";
+import type { DBEntry } from "./_util.ts";
+
+export type KeyOfDb = keyof typeof db;
+
+/** A map of the media type for a given extension */
+export const types = new Map<string, KeyOfDb>();
+
+/** A map of extensions for a given media type. */
+const extensions: Map<string, string[]> = new Map();
+
+/** Internal function to populate the maps based on the Mime DB. */
+const preference = ["nginx", "apache", undefined, "iana"];
+
+for (const type of Object.keys(db) as KeyOfDb[]) {
+  const mime = db[type] as DBEntry;
+  const exts = mime.extensions;
+
+  if (!exts || !exts.length) {
+    continue;
+  }
+
+  // @ts-ignore Work around https://github.com/denoland/dnt/issues/148
+  extensions.set(type, exts);
+
+  for (const ext of exts) {
+    const current = types.get(ext);
+    if (current) {
+      const from = preference.indexOf((db[current] as DBEntry).source);
+      const to = preference.indexOf(mime.source);
+
+      if (
+        current !== "application/octet-stream" &&
+        current !== "application/mp4" &&
+        (from > to ||
+          // @ts-ignore work around https://github.com/denoland/dnt/issues/148
+          (from === to && current.startsWith("application/")))
+      ) {
+        continue;
+      }
+    }
+
+    types.set(ext, type);
+  }
+}
+
+export { db, extensions };
+
+// denoCacheMetadata={"headers":{"access-control-allow-origin":"*","x-robots-tag":"noindex","accept-ranges":"bytes","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","content-length":"1375","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=86400","date":"Fri, 16 Oct 2026 18:01:24 GMT","cross-origin-resource-policy":"cross-origin","x-jsr-backend":"modules","cache-control":"public, max-age=31536000, immutable","etag":"\"ae7bf76887037aacad4e4a23b4e553d8\"","cf-cache-status":"HIT","cf-ray":"a4b8f7f69805b9cb-CPH","vary":"Origin","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","server":"cloudflare","age":"4328952","set-cookie":"__cf_bm=j2TpuBAIMF.obyokPIvxe5cKNo5HEu8O7bEh6sPtvh8-1792173684.2939444-1.0.1.1-hnJpTi.eQOjVaQLuz0E00qSPLYdb4SOqKNanjA6wxGTzW7.op6dPu.mcE6KAubpGi4tMb7reopWQsvU_LNE2wmfXGxnheKrDkcFJEJzof63FjOy2Th8OK9Nf_xuXwi8Q; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","content-type":"text/typescript","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=u4z67JdgsQG%2BRzCvjUZ5WR%2FbaJwHyb9DBwKW78Q8D0zE7NTkCjXCd2K9MelwB44b6Xm6l9b84%2F8fhGZhbajBJ3KJLokblD6oG%2BXZ3Imfc9G6R%2F3ZbZLug1w%3D\"}]}","access-control-expose-headers":"*"},"url":"https://jsr.io/@std/media-types/1.1.0/_db.ts","time":1792173684}

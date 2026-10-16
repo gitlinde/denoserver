@@ -1,0 +1,51 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+/**
+ * Test whether the given string is a glob.
+ *
+ * @example Usage
+ * ```ts
+ * import { isGlob } from "@std/path/is-glob";
+ * import { assert } from "@std/assert";
+ *
+ * assert(!isGlob("foo/bar/../baz"));
+ * assert(isGlob("foo/*ar/../baz"));
+ * ```
+ *
+ * @param str String to test.
+ * @returns `true` if the given string is a glob, otherwise `false`
+ */
+export function isGlob(str: string): boolean {
+  const chars: Record<string, string> = { "{": "}", "(": ")", "[": "]" };
+  const regex =
+    /\\(.)|(^!|\*|\?|[\].+)]\?|\[[^[\\\]]+\]|\{[^{\\}]+\}|\(\?[:!=][^\\)]+\)|\([^(|]+\|[^\\)]+\)|@\([^)]+\))/;
+
+  if (str === "") {
+    return false;
+  }
+
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(str))) {
+    if (match[2]) return true;
+    let idx = match.index + match[0].length;
+
+    // if an open bracket/brace/paren is escaped,
+    // set the index to the next closing character
+    const open = match[1];
+    const close = open ? chars[open] : null;
+    if (open && close) {
+      const n = str.indexOf(close, idx);
+      if (n !== -1) {
+        idx = n + 1;
+      }
+    }
+
+    str = str.slice(idx);
+  }
+
+  return false;
+}
+
+// denoCacheMetadata={"headers":{"content-encoding":"identity","access-control-expose-headers":"*","cache-control":"public, max-age=31536000, immutable","x-content-type-options":"nosniff","access-control-allow-origin":"*","accept-ranges":"bytes","x-jsr-backend":"modules","content-length":"1240","cf-cache-status":"HIT","etag":"\"a6aefc79f8a5e142acda58b34342fe12\"","age":"4328953","set-cookie":"__cf_bm=Zefh6QSdDKPks4yfqKss85VF_iHj31Yr9L4ime_2tUk-1792173684.2811522-1.0.1.1-4VaXa6UYS_5_wlBUdXUju2Lzm1fxRndiZchhCcGz2mGMYKDuUQxHCZ1iXT3ASXFQ4kYjI_8108BDCKgtNOxxnoTfA1643Qj2YGpGsjSp3tFF1UeU3rJ9S9HUlLy2yd4Z; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=S2Rn7ZBDYfb5cFNlxbESpPocj%2BOCrzIr6V4n8JzWp8Awa3rbi8z%2Frhek8otSMUN4s5WPQ4%2F4FReyAjoU0eGZyk9ilTpnGWUL1yVHjlx9CWzaLvQ3TIZa8k8%3D\"}]}","date":"Fri, 16 Oct 2026 18:01:24 GMT","x-robots-tag":"noindex","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","cf-ray":"a4b8f7f69fc0b9cb-CPH","cross-origin-resource-policy":"cross-origin","vary":"accept-encoding, Origin","content-type":"text/typescript","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","alt-svc":"h3=\":443\"; ma=86400","server":"cloudflare"},"url":"https://jsr.io/@std/path/1.1.6/is_glob.ts","time":1792173684}

@@ -1,0 +1,88 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { isIterator, isToken, needsEncoding } from "./_util.ts";
+
+/**
+ * Serializes the media type and the optional parameters as a media type
+ * conforming to {@link https://www.rfc-editor.org/rfc/rfc2045.html | RFC 2045} and
+ * {@link https://www.rfc-editor.org/rfc/rfc2616.html | RFC 2616}.
+ *
+ * The type and parameter names are written in lower-case.
+ *
+ * When any of the arguments results in a standard violation then the return
+ * value will be an empty string (`""`).
+ *
+ * @param type The media type to serialize.
+ * @param param Optional parameters to serialize.
+ *
+ * @returns The serialized media type.
+ *
+ * @example Basic usage
+ * ```ts
+ * import { formatMediaType } from "@std/media-types/format-media-type";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(formatMediaType("text/plain"), "text/plain");
+ * ```
+ *
+ * @example With parameters
+ * ```ts
+ * import { formatMediaType } from "@std/media-types/format-media-type";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(formatMediaType("text/plain", { charset: "UTF-8" }), "text/plain; charset=UTF-8");
+ * ```
+ */
+export function formatMediaType(
+  type: string,
+  param?: Record<string, string> | Iterable<[string, string]>,
+): string {
+  let serializedMediaType = "";
+  const [major = "", sub] = type.split("/");
+  if (!sub) {
+    if (!isToken(type)) {
+      return "";
+    }
+    serializedMediaType += type.toLowerCase();
+  } else {
+    if (!isToken(major) || !isToken(sub)) {
+      return "";
+    }
+    serializedMediaType += `${major.toLowerCase()}/${sub.toLowerCase()}`;
+  }
+
+  if (param) {
+    param = isIterator(param) ? Object.fromEntries(param) : param;
+    const attrs = Object.keys(param);
+    attrs.sort();
+
+    for (const attribute of attrs) {
+      if (!isToken(attribute)) {
+        return "";
+      }
+      const value = param[attribute]!;
+      serializedMediaType += `; ${attribute.toLowerCase()}`;
+
+      const needEnc = needsEncoding(value);
+      if (needEnc) {
+        serializedMediaType += "*";
+      }
+      serializedMediaType += "=";
+
+      if (needEnc) {
+        serializedMediaType += `utf-8''${encodeURIComponent(value)}`;
+        continue;
+      }
+
+      if (isToken(value)) {
+        serializedMediaType += value;
+        continue;
+      }
+      serializedMediaType += `"${value.replace(/["\\]/gi, (m) => `\\${m}`)}"`;
+    }
+  }
+  return serializedMediaType;
+}
+
+// denoCacheMetadata={"headers":{"accept-ranges":"bytes","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=PZD1wt%2FnnZTaal70nonpC3oBtLMcy0AwdT672t0I7MMVzy1gT4btRVKd0DuPtRhApGTbvV8rAyQsyvgMzDZ2dXDGlAuWkRMDiRhW6Fu5WW09v3nL%2FPaS340%3D\"}]}","alt-svc":"h3=\":443\"; ma=86400","server":"cloudflare","cf-ray":"a4b8f7f69fe3b9cb-CPH","content-type":"text/typescript","vary":"Origin","age":"4328952","etag":"\"cf9cadfc6bbbcebe72c6d6b00c253211\"","cross-origin-resource-policy":"cross-origin","x-jsr-backend":"modules","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"HIT","access-control-allow-origin":"*","access-control-expose-headers":"*","content-length":"2511","date":"Fri, 16 Oct 2026 18:01:24 GMT","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-content-type-options":"nosniff","x-robots-tag":"noindex","cache-control":"public, max-age=31536000, immutable","set-cookie":"__cf_bm=56kemYYMskhc2c670BQ718yofWGOIWXjKUg1U6KMx_0-1792173684.2878559-1.0.1.1-UN3k8gdpiXpnf8naJViV5ylyfPecTfkj5qrwJNESDwBxwqvA6oEH3nJ_3M_o3wiacXsHtkepwfwn93W6VbbchCaAHSavvUAZSdXOXUZEkQLBTNAYxUgc25tvUiPqwrgF; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT"},"url":"https://jsr.io/@std/media-types/1.1.0/format_media_type.ts","time":1792173684}

@@ -1,0 +1,80 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { assertPath } from "../_common/assert_path.ts";
+import { isPathSeparator } from "./_util.ts";
+import { normalize } from "./normalize.ts";
+import { fromFileUrl } from "./from_file_url.ts";
+
+/**
+ * Join all given a sequence of `paths`,then normalizes the resulting path.
+ *
+ * @example Usage
+ * ```ts
+ * import { join } from "@std/path/windows/join";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(join("C:\\foo", "bar", "baz\\.."), "C:\\foo\\bar");
+ * assertEquals(join(new URL("file:///C:/foo"), "bar", "baz\\.."), "C:\\foo\\bar");
+ * ```
+ *
+ * @param path The path to join. This can be string or file URL.
+ * @param paths The paths to join.
+ * @returns The joined path.
+ */
+export function join(path?: URL | string, ...paths: string[]): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
+  paths = path ? [path, ...paths] : paths;
+  paths.forEach((path) => assertPath(path));
+  paths = paths.filter((path) => path.length > 0);
+  if (paths.length === 0) return ".";
+
+  // Make sure that the joined path doesn't start with two slashes, because
+  // normalize() will mistake it for an UNC path then.
+  //
+  // This step is skipped when it is very clear that the user actually
+  // intended to point at an UNC path. This is assumed when the first
+  // non-empty string arguments starts with exactly two slashes followed by
+  // at least one more non-slash character.
+  //
+  // Note that for normalize() to treat a path as an UNC path it needs to
+  // have at least 2 components, so we don't filter for that here.
+  // This means that the user can use join to construct UNC paths from
+  // a server name and a share name; for example:
+  //   path.join('//server', 'share') -> '\\\\server\\share\\'
+  let needsReplace = true;
+  let slashCount = 0;
+  const firstPart = paths[0]!;
+  if (isPathSeparator(firstPart.charCodeAt(0))) {
+    ++slashCount;
+    const firstLen = firstPart.length;
+    if (firstLen > 1) {
+      if (isPathSeparator(firstPart.charCodeAt(1))) {
+        ++slashCount;
+        if (firstLen > 2) {
+          if (isPathSeparator(firstPart.charCodeAt(2))) ++slashCount;
+          else {
+            // We matched a UNC path in the first part
+            needsReplace = false;
+          }
+        }
+      }
+    }
+  }
+  let joined = paths.join("\\");
+  if (needsReplace) {
+    // Find any more consecutive slashes we need to replace
+    for (; slashCount < joined.length; ++slashCount) {
+      if (!isPathSeparator(joined.charCodeAt(slashCount))) break;
+    }
+
+    // Replace the slashes if needed
+    if (slashCount >= 2) joined = `\\${joined.slice(slashCount)}`;
+  }
+
+  return normalize(joined);
+}
+
+// denoCacheMetadata={"headers":{"cf-cache-status":"HIT","alt-svc":"h3=\":443\"; ma=86400","content-type":"text/typescript","content-encoding":"identity","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-jsr-backend":"modules","vary":"accept-encoding, Origin","cross-origin-resource-policy":"cross-origin","x-content-type-options":"nosniff","access-control-allow-origin":"*","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-length":"2748","etag":"\"2726b127e6398c14e9b2b87cca331904\"","cf-ray":"a4b8f7f69fd3b9cb-CPH","server":"cloudflare","date":"Fri, 16 Oct 2026 18:01:24 GMT","access-control-expose-headers":"*","cache-control":"public, max-age=31536000, immutable","age":"4328953","x-robots-tag":"noindex","accept-ranges":"bytes","set-cookie":"__cf_bm=wKQaCByhllNuFLL4BKr9XG7q3xUrBhswihnZHH8y.UY-1792173684.284384-1.0.1.1-EsOOlQ.SOwV6xuB9zrgMTSk0CrBaNUEx6HluTZpaOaelEqwa2HByMiRA04UYrC18a5FeEz1bM.jONmpf5fXQOCyyyLvyrlX4r8G1iLSuZeo3Tk.MJ2ImKk5xbkn3icRf; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=QTm5ht%2FsZbCUzittGcgDh2fm06iZV2k%2B9z8Z2Wo9JLzG7MYgNATnu%2FcLPwNMll6ZLjDm6DvKPDRamnk4XVi9nWuRKQxOHHgHiF0DTYCxGFg%2Fx7icULKxz1Q%3D\"}]}"},"url":"https://jsr.io/@std/path/1.1.6/windows/join.ts","time":1792173684}

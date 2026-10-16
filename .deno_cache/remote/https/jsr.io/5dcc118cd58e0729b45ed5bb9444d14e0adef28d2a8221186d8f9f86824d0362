@@ -1,0 +1,72 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+function toUint8Array(
+  value: ArrayBufferView | ArrayBufferLike,
+): Uint8Array {
+  if (value instanceof Uint8Array) {
+    return value;
+  }
+  return ArrayBuffer.isView(value)
+    ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
+    : new Uint8Array(value);
+}
+
+/**
+ * When checking the values of cryptographic hashes are equal, default
+ * comparisons can be susceptible to timing based attacks, where attacker is
+ * able to find out information about the host system by repeatedly checking
+ * response times to equality comparisons of values.
+ *
+ * It is likely some form of timing safe equality will make its way to the
+ * WebCrypto standard (see:
+ * {@link https://github.com/w3c/webcrypto/issues/270 | w3c/webcrypto#270}), but until
+ * that time, `timingSafeEqual()` is provided.
+ *
+ * Note: This is a best-effort constant-time comparison implemented in
+ * JavaScript. The V8 JIT compiler does not provide formal constant-time
+ * guarantees, and inputs backed by `SharedArrayBuffer` are susceptible to
+ * concurrent modification during comparison.
+ *
+ * @example Usage
+ * ```ts
+ * import { timingSafeEqual } from "@std/crypto/timing-safe-equal";
+ * import { assert } from "@std/assert";
+ *
+ * const a = await crypto.subtle.digest(
+ *   "SHA-384",
+ *   new TextEncoder().encode("hello world"),
+ * );
+ * const b = await crypto.subtle.digest(
+ *   "SHA-384",
+ *   new TextEncoder().encode("hello world"),
+ * );
+ *
+ * assert(timingSafeEqual(a, b));
+ * ```
+ *
+ * @param a The first value to compare.
+ * @param b The second value to compare.
+ * @returns `true` if the values are equal, otherwise `false`.
+ * @throws {TypeError} If the byte lengths of the two buffers are not equal.
+ */
+export function timingSafeEqual(
+  a: ArrayBufferView | ArrayBufferLike,
+  b: ArrayBufferView | ArrayBufferLike,
+): boolean {
+  if (a.byteLength !== b.byteLength) {
+    throw new TypeError(
+      `Cannot compare buffers of different byte lengths (${a.byteLength} vs ${b.byteLength})`,
+    );
+  }
+  const ua = toUint8Array(a);
+  const ub = toUint8Array(b);
+  const length = ua.length;
+  let out = 0;
+  for (let i = 0; i < length; i++) {
+    out |= ua[i]! ^ ub[i]!;
+  }
+  return out === 0;
+}
+
+// denoCacheMetadata={"headers":{"vary":"accept-encoding, Origin","date":"Fri, 16 Oct 2026 18:01:24 GMT","etag":"\"8a2e1944bf0938314408dffa32d67081\"","server":"cloudflare","access-control-expose-headers":"*","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=wHJCT00yPD6fWb3u42WGFBsey51wIYGZZ%2BMXND3fSJRfTLFagxcLvjdbvA2rqGCejJ5Bxz2yv7OolPMV4LGDj%2BgYiHVj7sNoZ2b70nxUleB%2FkNgAj7lY9v4%3D\"}]}","content-encoding":"identity","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","access-control-allow-origin":"*","cf-ray":"a4b8f7f69f5bb9cb-CPH","cross-origin-resource-policy":"cross-origin","x-jsr-backend":"modules","set-cookie":"__cf_bm=LmroMv.Cov9ofVMnxek0F.W9gwCgd2eKiC.FN41dcDE-1792173684.2543216-1.0.1.1-50xs8A65h2kAHtM_uocuiySZSA_KgVSOZwOB9hN16IA0brLQwx_oo9TrX6UhL86Z9IB65A1ov9l8GVWr_fmjuQal49Tar9CyYeMk22dU8HYRjnlK6N9d6jRoZf0RBqVY; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","content-type":"text/typescript","accept-ranges":"bytes","cf-cache-status":"HIT","x-content-type-options":"nosniff","age":"466484","x-robots-tag":"noindex","content-length":"2285","alt-svc":"h3=\":443\"; ma=86400","cache-control":"public, max-age=31536000, immutable"},"url":"https://jsr.io/@std/crypto/1.1.0/timing_safe_equal.ts","time":1792173684}

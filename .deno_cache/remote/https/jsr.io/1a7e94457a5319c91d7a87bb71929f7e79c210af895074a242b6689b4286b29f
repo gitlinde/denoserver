@@ -1,0 +1,93 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { CHAR_COLON, CHAR_DOT } from "../_common/constants.ts";
+import { assertPath } from "../_common/assert_path.ts";
+import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
+
+/**
+ * Return the extension of the `path` with leading period.
+ *
+ * @example Usage
+ * ```ts
+ * import { extname } from "@std/path/windows/extname";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(extname("file.ts"), ".ts");
+ * assertEquals(extname(new URL("file:///C:/foo/bar/baz.ext")), ".ext");
+ * ```
+ *
+ * @param path The path to get the extension from.
+ * @returns The extension of the `path`.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
+ */
+export function extname(path: string | URL): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
+  assertPath(path);
+
+  let start = 0;
+  let startDot = -1;
+  let startPart = 0;
+  let end = -1;
+  let matchedSlash = true;
+  // Track the state of characters (if any) we see before our first dot and
+  // after any path separator we find
+  let preDotState = 0;
+
+  // Check for a drive letter prefix so as not to mistake the following
+  // path separator as an extra separator at the end of the path that can be
+  // disregarded
+
+  if (
+    path.length >= 2 &&
+    path.charCodeAt(1) === CHAR_COLON &&
+    isWindowsDeviceRoot(path.charCodeAt(0))
+  ) {
+    start = startPart = 2;
+  }
+
+  for (let i = path.length - 1; i >= start; --i) {
+    const code = path.charCodeAt(i);
+    if (isPathSeparator(code)) {
+      // If we reached a path separator that was not part of a set of path
+      // separators at the end of the string, stop now
+      if (!matchedSlash) {
+        startPart = i + 1;
+        break;
+      }
+      continue;
+    }
+    if (end === -1) {
+      // We saw the first non-path separator, mark this as the end of our
+      // extension
+      matchedSlash = false;
+      end = i + 1;
+    }
+    if (code === CHAR_DOT) {
+      // If this is our first dot, mark it as the start of our extension
+      if (startDot === -1) startDot = i;
+      else if (preDotState !== 1) preDotState = 1;
+    } else if (startDot !== -1) {
+      // We saw a non-dot and non-path separator before our dot, so we should
+      // have a good chance at having a non-empty extension
+      preDotState = -1;
+    }
+  }
+
+  if (
+    startDot === -1 ||
+    end === -1 ||
+    // We saw a non-dot character immediately before the dot
+    preDotState === 0 ||
+    // The (right-most) trimmed path component is exactly '..'
+    (preDotState === 1 && startDot === end - 1 && startDot === startPart + 1)
+  ) {
+    return "";
+  }
+  return path.slice(startDot, end);
+}
+
+// denoCacheMetadata={"headers":{"alt-svc":"h3=\":443\"; ma=86400","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-encoding":"identity","age":"4328953","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Gcy3GB0QDaLMNoSCw2NHDjkxBMJEf1oEx3m4qYplOPJh9PE63Iu0gur0iJIFl7PqE28glmKsvblLBK62h3GDky4DduFrEAF4g3475PxsC%2BCH03%2Fy8CAaKek%3D\"}]}","x-content-type-options":"nosniff","vary":"accept-encoding, Origin","access-control-expose-headers":"*","x-robots-tag":"noindex","cache-control":"public, max-age=31536000, immutable","cf-ray":"a4b8f7f69fccb9cb-CPH","content-length":"2793","cf-cache-status":"HIT","server":"cloudflare","accept-ranges":"bytes","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","cross-origin-resource-policy":"cross-origin","content-type":"text/typescript","set-cookie":"__cf_bm=G3vpI_Z.Wk1kVi0Tg_cZU2iI2CIt5jCh1Ikg.kE7to8-1792173684.2833939-1.0.1.1-kMLS7lIR.pMTSn.2NobQpdGWTOnCfxcDGWPz9qZrAfapK5Lpd1G7KKX.W4PxLvrzypikHhP4oR06XHm2iGrLcTDLGhE9OdizgR6BwetsbHiVpyGKFQfwmDQ0YkFeNO73; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","date":"Fri, 16 Oct 2026 18:01:24 GMT","etag":"\"35569bd52363f9e3003896c26fbfcdca\"","x-jsr-backend":"modules","access-control-allow-origin":"*"},"url":"https://jsr.io/@std/path/1.1.6/windows/extname.ts","time":1792173684}

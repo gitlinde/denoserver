@@ -1,0 +1,47 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import type { GlobOptions } from "../_common/glob_to_reg_exp.ts";
+import { join } from "./join.ts";
+import { SEPARATOR } from "./constants.ts";
+import { normalizeGlob } from "./normalize_glob.ts";
+
+export type { GlobOptions };
+
+/**
+ * Like join(), but doesn't collapse "**\/.." when `globstar` is true.
+ *
+ * @example Usage
+ * ```ts
+ * import { joinGlobs } from "@std/path/posix/join-globs";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const path = joinGlobs(["foo", "bar", "**"], { globstar: true });
+ * assertEquals(path, "foo/bar/**");
+ * ```
+ *
+ * @param globs The globs to join.
+ * @param options The options to use.
+ * @returns The joined path.
+ */
+export function joinGlobs(
+  globs: string[],
+  options: Pick<GlobOptions, "globstar"> = {},
+): string {
+  const { globstar = false } = options;
+  if (!globstar || globs.length === 0) {
+    return join(...globs);
+  }
+  let joined: string | undefined;
+  for (const glob of globs) {
+    const path = glob;
+    if (path.length > 0) {
+      if (!joined) joined = path;
+      else joined += `${SEPARATOR}${path}`;
+    }
+  }
+  if (!joined) return ".";
+  return normalizeGlob(joined, { globstar });
+}
+
+// denoCacheMetadata={"headers":{"cache-control":"public, max-age=31536000, immutable","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","access-control-allow-origin":"*","x-jsr-backend":"modules","content-length":"1251","etag":"\"845593b188b82a0a38dc6d5528a87364\"","age":"4328953","server":"cloudflare","vary":"accept-encoding, Origin","access-control-expose-headers":"*","x-robots-tag":"noindex","accept-ranges":"bytes","date":"Fri, 16 Oct 2026 18:01:24 GMT","cross-origin-resource-policy":"cross-origin","content-encoding":"identity","x-content-type-options":"nosniff","set-cookie":"__cf_bm=QqgfRnB9RhWQpz51pxqsEW8euMmNv_yuGcLOLtJSl9M-1792173684.2903469-1.0.1.1-C952oSBjZWecbvSRMYNcfe7JgzTipxJ41APwicsAt2seenhQPAy3UkHiSkjBqUpQKR9cFsJ1OqHk9qM4K4R2rKJ6A_nQrCe5S8NbACUb4ax4QUKDJZX1Ji6NgqMBrqdh; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","cf-cache-status":"HIT","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-ray":"a4b8f7f69fefb9cb-CPH","alt-svc":"h3=\":443\"; ma=86400","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=rFX6Y0Ngie%2BCC2cORB%2BsUT5hBoWwogxu4NOtCY00gy1K21hkmILugZrO4jY3FG1HbcgvDCgzpe3vgPxOes6OICGDzQiRiByz7ARhLg6xHnI8yDiylOqVd3Q%3D\"}]}","content-type":"text/typescript"},"url":"https://jsr.io/@std/path/1.1.6/posix/join_globs.ts","time":1792173684}

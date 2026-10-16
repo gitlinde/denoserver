@@ -1,0 +1,57 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import {
+  assertArgs,
+  lastPathSegment,
+  stripSuffix,
+} from "../_common/basename.ts";
+import { CHAR_COLON } from "../_common/constants.ts";
+import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
+import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
+
+/**
+ * Return the last portion of a `path`.
+ * Trailing directory separators are ignored, and optional suffix is removed.
+ *
+ * @example Usage
+ * ```ts
+ * import { basename } from "@std/path/windows/basename";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(basename("C:\\user\\Documents\\"), "Documents");
+ * assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");
+ * assertEquals(basename("C:\\user\\Documents\\image.png", ".png"), "image");
+ * assertEquals(basename(new URL("file:///C:/user/Documents/image.png")), "image.png");
+ * assertEquals(basename(new URL("file:///C:/user/Documents/image.png"), ".png"), "image");
+ * ```
+ *
+ * @param path The path to extract the name from.
+ * @param suffix The suffix to remove from extracted name.
+ * @returns The extracted name.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
+ */
+export function basename(path: string | URL, suffix = ""): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
+  assertArgs(path, suffix);
+
+  // Check for a drive letter prefix so as not to mistake the following
+  // path separator as an extra separator at the end of the path that can be
+  // disregarded
+  let start = 0;
+  if (path.length >= 2) {
+    const drive = path.charCodeAt(0);
+    if (isWindowsDeviceRoot(drive)) {
+      if (path.charCodeAt(1) === CHAR_COLON) start = 2;
+    }
+  }
+
+  const lastSegment = lastPathSegment(path, isPathSeparator, start);
+  const strippedSegment = stripTrailingSeparators(lastSegment, isPathSeparator);
+  return suffix ? stripSuffix(strippedSegment, suffix) : strippedSegment;
+}
+
+// denoCacheMetadata={"headers":{"content-length":"2072","x-jsr-backend":"modules","vary":"accept-encoding, Origin","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","access-control-expose-headers":"*","date":"Fri, 16 Oct 2026 18:01:24 GMT","content-type":"text/typescript","access-control-allow-origin":"*","content-encoding":"identity","x-content-type-options":"nosniff","accept-ranges":"bytes","server":"cloudflare","cf-ray":"a4b8f7f69ff4b9cb-CPH","cross-origin-resource-policy":"cross-origin","x-robots-tag":"noindex","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=o%2FeJp8vvq7%2BHZgeVJh0uHPVAWAaLA5cCyGHBOaTjQv%2FuIKDQaVMRXpFLZs8Gegh8Fej2XxUg1azqrtG9z1rhfajfNN4XaiesD%2BvC4AgKLgihJVdOKoFoRcU%3D\"}]}","alt-svc":"h3=\":443\"; ma=86400","cf-cache-status":"HIT","etag":"\"dd55b3030adc88d8124bd930f42743d4\"","set-cookie":"__cf_bm=hcUJ7zdxHG1BgdRpXw.xIuZPVp60tNnJBPd8SHT7Cng-1792173684.2913852-1.0.1.1-CtwBSdsRwcGF.LL7QfBahVgIi9o05J56d5ESNRLR6ZfB7VOOvuDYdwEoGhwfz_5qj0bRfT.0Gjy99gABtp..O367k2kuYAvqO5Xq6Ypz8NSyJySyXSF3.Mz0zDNm.8hD; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","age":"4328953","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cache-control":"public, max-age=31536000, immutable"},"url":"https://jsr.io/@std/path/1.1.6/windows/basename.ts","time":1792173684}

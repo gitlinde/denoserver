@@ -1,0 +1,45 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import type { GlobOptions } from "../_common/glob_to_reg_exp.ts";
+import { normalize } from "./normalize.ts";
+import { SEPARATOR_PATTERN } from "./constants.ts";
+
+export type { GlobOptions };
+
+/**
+ * Like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
+ *
+ * @example Usage
+ * ```ts
+ * import { normalizeGlob } from "@std/path/posix/normalize-glob";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const path = normalizeGlob("foo/bar/../*", { globstar: true });
+ * assertEquals(path, "foo/*");
+ * ```
+ *
+ * @param glob The glob to normalize.
+ * @param options The options to use.
+ * @returns The normalized path.
+ */
+export function normalizeGlob(
+  glob: string,
+  options: Pick<GlobOptions, "globstar"> = {},
+): string {
+  const { globstar = false }: GlobOptions = options;
+  if (glob.match(/\0/g)) {
+    throw new Error(`Glob contains invalid characters: "${glob}"`);
+  }
+  if (!globstar) {
+    return normalize(glob);
+  }
+  const s = SEPARATOR_PATTERN.source;
+  const badParentPattern = new RegExp(
+    `(?<=(${s}|^)\\*\\*${s})\\.\\.(?=${s}|$)`,
+    "g",
+  );
+  return normalize(glob.replace(badParentPattern, "\0")).replace(/\0/g, "..");
+}
+
+// denoCacheMetadata={"headers":{"cf-ray":"a4b8f7f6980eb9cb-CPH","content-length":"1263","cross-origin-resource-policy":"cross-origin","etag":"\"e9c43080c06287e06b5545bb78f830f2\"","x-robots-tag":"noindex","access-control-expose-headers":"*","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=GvBCPSj8xBnZ10QA6V8PH%2FUoUQidcbI5ZQNq5AFOmRwSyqXx8iID4zBAfYRNROyU61%2F1VBZDVEnqw4lw4xCr7xOWPS6cww08rJ06P4ibHxlUpFvaYfeeHtI%3D\"}]}","set-cookie":"__cf_bm=LKeOkPbS8OOs5IYAW.CfieMOo.NIxyzAT2rGGec0CMA-1792173684.295236-1.0.1.1-Ydl.VH1DcqocyQHKuVE65NWZ8mFda5FRdCV4rngxTvw8tSHxl1LmPYYrqSV0s5AItf56kRbrwQ2slKUCcG_MDcumqEk.ZQgHXGqiSfJg3F2dSX5HqTHZQ7IKR_jHvcf0; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","date":"Fri, 16 Oct 2026 18:01:24 GMT","accept-ranges":"bytes","content-type":"text/typescript","access-control-allow-origin":"*","vary":"accept-encoding, Origin","x-jsr-backend":"modules","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","x-content-type-options":"nosniff","cf-cache-status":"HIT","server":"cloudflare","alt-svc":"h3=\":443\"; ma=86400","cache-control":"public, max-age=31536000, immutable","content-encoding":"identity","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","age":"4328953"},"url":"https://jsr.io/@std/path/1.1.6/posix/normalize_glob.ts","time":1792173684}

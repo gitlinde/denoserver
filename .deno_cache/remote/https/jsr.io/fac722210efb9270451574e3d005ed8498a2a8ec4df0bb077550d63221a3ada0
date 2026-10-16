@@ -1,0 +1,27 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// Copyright the Browserify authors. MIT License.
+// Ported from https://github.com/browserify/path-browserify/
+// This module is browser compatible.
+
+export function stripTrailingSeparators(
+  segment: string,
+  isSep: (char: number) => boolean,
+): string {
+  if (segment.length <= 1) {
+    return segment;
+  }
+
+  let end = segment.length;
+
+  for (let i = segment.length - 1; i > 0; i--) {
+    if (isSep(segment.charCodeAt(i))) {
+      end = i;
+    } else {
+      break;
+    }
+  }
+
+  return segment.slice(0, end);
+}
+
+// denoCacheMetadata={"headers":{"cache-control":"public, max-age=31536000, immutable","content-type":"text/typescript","content-length":"571","x-content-type-options":"nosniff","x-jsr-backend":"modules","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=rNRv5DnGZct3Vyxg%2B84xitS0EMEGmSVeD7So6qsKHMvvppjwEhCITI3IUQxtdS7hDUq0yy9f4YPUu8YsC3O%2BNk4CpF0N%2F2PGJRIPo15ClS3yunnCdK6erzc%3D\"}]}","x-robots-tag":"noindex","cf-cache-status":"HIT","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","alt-svc":"h3=\":443\"; ma=86400","access-control-allow-origin":"*","vary":"accept-encoding, Origin","cf-ray":"a4b8f7f6980ab9cb-CPH","set-cookie":"__cf_bm=NRCGNGCmVEla7LlssrtALoeEvYSQc7i2ONtnwkEjp7I-1792173684.2945487-1.0.1.1-FYkWXP64pac1y.CU9eFVQRn9XUYxjrjcA9N9Nmpjm4H5iZooqSgDV07SViixBpS3YSN1a1uDtFy.vpARF8YAZT_3v6kmEFQUPLRTZ1JCX69baBsP_lKugy_bKidA3dzK; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT","access-control-expose-headers":"*","accept-ranges":"bytes","age":"4328952","date":"Fri, 16 Oct 2026 18:01:24 GMT","cross-origin-resource-policy":"cross-origin","content-encoding":"identity","server":"cloudflare","etag":"\"1e96acc612222a4d11382c8d76ebbf0c\""},"url":"https://jsr.io/@std/path/1.1.6/_common/strip_trailing_separators.ts","time":1792173684}

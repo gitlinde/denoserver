@@ -1,0 +1,42 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+import { CHAR_COLON } from "../_common/constants.ts";
+import { assertPath } from "../_common/assert_path.ts";
+import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+
+/**
+ * Verifies whether provided path is absolute.
+ *
+ * @example Usage
+ * ```ts
+ * import { isAbsolute } from "@std/path/windows/is-absolute";
+ * import { assert, assertFalse } from "@std/assert";
+ *
+ * assert(isAbsolute("C:\\foo\\bar"));
+ * assertFalse(isAbsolute("..\\baz"));
+ * ```
+ *
+ * @param path The path to verify.
+ * @returns `true` if the path is absolute, `false` otherwise.
+ */
+export function isAbsolute(path: string): boolean {
+  assertPath(path);
+
+  const len = path.length;
+  if (len === 0) return false;
+
+  const code = path.charCodeAt(0);
+  if (isPathSeparator(code)) {
+    return true;
+  } else if (isWindowsDeviceRoot(code)) {
+    // Possible device root
+
+    if (len > 2 && path.charCodeAt(1) === CHAR_COLON) {
+      if (isPathSeparator(path.charCodeAt(2))) return true;
+    }
+  }
+  return false;
+}
+
+// denoCacheMetadata={"headers":{"content-type":"text/typescript","content-encoding":"identity","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=U5IHSdJ7zc40Q045oK%2Fu8iwxSL9m6R54FdMJaBzS5LPtmY%2FkyqJz4eKifrKUto7EPrMZGY8zRndGVozgpV22I%2Fdp53w5A9KWhXvi%2FNB%2BBj35SrucD9gMqnw%3D\"}]}","content-security-policy":"default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; sandbox; form-action 'none';","alt-svc":"h3=\":443\"; ma=86400","access-control-allow-origin":"*","date":"Fri, 16 Oct 2026 18:01:24 GMT","x-robots-tag":"noindex","etag":"\"1422baf5e27b8c300d420b7cddc34ba2\"","accept-ranges":"bytes","cache-control":"public, max-age=31536000, immutable","cf-ray":"a4b8f7f69fd0b9cb-CPH","content-length":"1092","cf-cache-status":"HIT","cross-origin-resource-policy":"cross-origin","x-content-type-options":"nosniff","x-jsr-backend":"modules","access-control-expose-headers":"*","server":"cloudflare","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","age":"4328953","vary":"accept-encoding, Origin","set-cookie":"__cf_bm=yjlYffjNfYHEEs5Fr3BOdSmciwxBwU4uvo12uil6aa0-1792173684.2839696-1.0.1.1-ArB7vXae79JhMsVveni4lHx12V47LBg5uGhX_T.BmHRTBTt7ICDjvZ6wuGnORRwPycXayN329nvx7bzhFiCZJKeMkw4iE2Q1Z0yx0FBjrj4.yk65GW5oCv1nbGUzlsxN; HttpOnly; SameSite=None; Secure; Path=/; Domain=jsr.io; Expires=Fri, 16 Oct 2026 18:31:24 GMT"},"url":"https://jsr.io/@std/path/1.1.6/windows/is_absolute.ts","time":1792173684}
