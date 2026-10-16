@@ -30,99 +30,101 @@ import { walk} from "jsr:@std/fs";
 //         body: ""
 //     },
 // }
+export async function writeGeneratedHtmlToDisk() {
+    const mimes = []
 
-const mimes = []
+    const srcToMime = new Map<string, string>
 
-const srcToMime = new Map<string, string>
+    const htmlVideos: string[] = []
+    const htmlImages: string[] = []
+    const htmlGifs: string[] = []
 
-const htmlVideos: string[] = []
-const htmlImages: string[] = []
-const htmlGifs: string[] = []
+    // may not be be careful enough here, if undefined
+    // shows up it's because the index is out of bounds
+    // hardcoded to be files like /saveDir/gif/example.gif
+    for await (const entry of walk("./saved/", { includeDirs: false })) {
+        const srcPath = entry.path;
+        const pathParts = srcPath.split("/");
+        const mimeType = pathParts[pathParts.length - 3];
+        const mimeSubType = pathParts[pathParts.length - 2]
+        const mime = `${mimeType}/${mimeSubType}`
+        const fileName = pathParts[pathParts.length - 1];
+        mimes.push(mime)
 
-// may not be be careful enough here, if undefined
-// shows up it's because the index is out of bounds
-// hardcoded to be files like /saveDir/gif/example.gif
-for await (const entry of walk("./saved/", { includeDirs: false })) {
-    const srcPath = entry.path;
-    const pathParts = srcPath.split("/");
-    const mimeType = pathParts[pathParts.length - 3];
-    const mimeSubType = pathParts[pathParts.length - 2]
-    const mime = `${mimeType}/${mimeSubType}`
-    const fileName = pathParts[pathParts.length - 1];
-    mimes.push(mime)
+        srcToMime.set(srcPath, mime);
 
-    srcToMime.set(srcPath, mime);
-
-    // special treatment
-    if(mimeSubType === "gif") {
-        htmlGifs.push(`<img width="300" height="300" src="${srcPath}" type="${mime}">`)
-        continue;
-    }
-    if(mimeType === "image") {
-        htmlImages.push(`<img width="300" height="300" src="${srcPath}" type="${mime}">`)
-        continue;
-    }
-
-    if(mimeType === "video") {
-        htmlVideos.push(`
-            <video width="300" height="300" controls>
-                <source src="${srcPath}" type="${mime}">
-            </video>
-        `)
-        continue;
-    }
-}
-
-// console.log(htmlImages)
-
-const html = {
-    image: {
-        body: htmlImages
-    },
-    gif: {
-        body: htmlGifs
-    },
-    video: {
-        body: htmlVideos
-    }
-}
-
-const allHtml = [htmlGifs, htmlImages, htmlVideos]
-
-// this does create a comma between the elements in the array
-const finalHtml =
-`<!DOCTYPE html>
-<html lang="en">
-<head>
-    <style>
-        body {
-            background-color: grey;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            // height: 80vh;
-            // margin: 0px;
+        // special treatment
+        if(mimeSubType === "gif") {
+            htmlGifs.push(`<img width="300" height="300" src="${srcPath}" type="${mime}">`)
+            continue;
         }
-    </style>
-   	<meta charset="UTF-8">
-   	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-   	<title>${"Funny media 🤪"}</title>
-</head>
-<body>
-    <form method="POST" enctype="multipart/form-data">
-        <input name="file" type="file" />
-        <input name="password" type="password"/>
-        <button type="submit">Upload</button>
-    </form>${allHtml}
-</body>
-</html>`
+        if(mimeType === "image") {
+            htmlImages.push(`<img width="300" height="300" src="${srcPath}" type="${mime}">`)
+            continue;
+        }
 
-console.log(finalHtml)
+        if(mimeType === "video") {
+            htmlVideos.push(`
+                <video width="300" height="300" controls>
+                    <source src="${srcPath}" type="${mime}">
+                </video>
+            `)
+            continue;
+        }
+    }
 
-// const file = Deno.create("./generated.html");
-Deno.writeTextFile("./generated.html", finalHtml);
+    // console.log(htmlImages)
+
+    const html = {
+        image: {
+            body: htmlImages
+        },
+        gif: {
+            body: htmlGifs
+        },
+        video: {
+            body: htmlVideos
+        }
+    }
+
+    const allHtml = [htmlGifs, htmlImages, htmlVideos]
+
+    // this does create a comma between the elements in the array
+    const finalHtml =
+    `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <style>
+            body {
+                background-color: grey;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                // height: 80vh;
+                // margin: 0px;
+            }
+        </style>
+       	<meta charset="UTF-8">
+       	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+       	<title>${"Funny media 🤪"}</title>
+    </head>
+    <body>
+        <form method="POST" enctype="multipart/form-data">
+            <input name="file" type="file" />
+            <input name="password" type="password"/>
+            <button type="submit">Upload</button>
+        </form>${allHtml}
+    </body>
+    </html>`
+
+    console.log(finalHtml)
+
+    // const file = Deno.create("./generated.html");
+    Deno.writeTextFile("./generated.html", finalHtml);
+    return finalHtml;
+}
 
 
 // throw Error("Reached old code");

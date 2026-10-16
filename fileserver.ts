@@ -1,6 +1,10 @@
 import sanitizeFileName from "sanitize-filename"
 import { fileTypeFromBuffer, FileTypeResult } from "file-type"
+import { writeGeneratedHtmlToDisk } from "./fileviewer.ts"
+import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
+import { FILE_SERVER_PASSWORD, safeCompare } from "./password.ts";
 
+// AI security check
 // 4. Polyglot Files / XSS (Future Risk)
 // Severity: Medium
 // While file-type is great, it only checks the beginning of a file (the "magic bytes").
@@ -14,20 +18,14 @@ interface Bucket {
     last: number;
 }
 
-// global constants
 const saveDirectory = "./saved";
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const REFRESH_RATE = 2;
-const MAX_REQUESTS = 10;
-const FILE_SERVER_PASSWORD = Deno.env.get("FILE_SERVER_PASWORD");
+const MAX_REQUESTS = 20;
 const buckets = new Map<string, Bucket>;
 
 init();
-
 function init() {
-    if(FILE_SERVER_PASSWORD === undefined) {
-        throw new Error(`Password not set in .env. Set it as FILE_SERVER_PASWORD="<password>"`)
-    }
 
     const cleanBucketMemory = setInterval(() => {
         const cutoff = Date.now() - (REFRESH_RATE * 1000) * MAX_REQUESTS;
@@ -152,9 +150,12 @@ export async function fileHandler(req: Request, info: Deno.ServeHandlerInfo): Pr
     // A BUNCH OF GUARD CLAUSES COZ IM IN LOVE
     const formData: FormData = await req.formData();
 
-    if(formData.get("password") !== FILE_SERVER_PASSWORD) {
-        return new Response("NO!",  { status: 401 })
+    const clientPassword = formData.get("password")?.toString() ?? "";
+    if(!await safeCompare(clientPassword, FILE_SERVER_PASSWORD) ) {
+        return new Response("incorrect password",  { status: 401 })
     }
+
+    // as File is unsafe i think
     const file: File | null = formData?.get("file") as File;
     if(!file) return new Response("File required but not provided.", { status: 400 });
     if(file.size > MAX_FILE_SIZE) return new Response(`File exceeds ${MAX_FILE_SIZE / 1024 / 1024}mb limit.`, { status: 413 });
