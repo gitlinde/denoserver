@@ -147,7 +147,7 @@ export async function fileHandler(req: Request, info: Deno.ServeHandlerInfo): Pr
     // }
     if(req.method === "GET" && new URL(req.url).pathname.startsWith("/saved/")) {
         // console.log("HAPPENS!")
-        await serveDir(req, {fsRoot: ".", showIndex: true});
+        return await serveDir(req, {fsRoot: ".", showIndex: true});
         // await writeGeneratedHtmlToDisk();
         // const response = await serveDir(req, {fsRoot: ".", showIndex: true});
         // // response.
