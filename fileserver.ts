@@ -190,14 +190,17 @@ async function getMimeFilePath(buffer: ArrayBuffer): Promise<string | false> {  
     const fileType: FileTypeResult | undefined = await fileTypeFromBuffer(buffer);
     if(fileType === undefined) return false;
 
-    // impossible not to repeat yourself since there is no good name for this variable
-    const mimeType = fileType.mime.split("/")[0];
-    const mimeSubtype = fileType.mime.split("/")[1];
+    // i think i'll do this to easily put in the mime file type in html
+    return fileType.mime;
 
-    switch(mimeType) {
-        // Kinda nasty coz i want images like png+jpg in one folder, all videos like mp3, mov in one folder, but also GIFs in one folder, so i must
-        case "image": return mimeSubtype === "gif" ? mimeSubtype : mimeType;
-        case "video": return mimeType;
-        default: return false;
-    }
+    // impossible not to repeat yourself since there is no good name for this variable
+//     const mimeType = fileType.mime.split("/")[0];
+//     const mimeSubtype = fileType.mime.split("/")[1];
+//
+//     switch(mimeType) {
+//         // Kinda nasty coz i want images like png+jpg in one folder, all videos like mp3, mov in one folder, but also GIFs in one folder, so i must
+//         case "image": return mimeSubtype === "gif" ? mimeSubtype : mimeType;
+//         case "video": return mimeType;
+//         default: return false;
+//     }
 }
