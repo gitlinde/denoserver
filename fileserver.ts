@@ -21,8 +21,8 @@ interface Bucket {
 
 const saveDirectory = "./saved";
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-const REFRESH_RATE = 2;
-const MAX_REQUESTS = 100;
+const REFRESH_RATE = 4;
+const MAX_REQUESTS = 5;
 const buckets = new Map<string, Bucket>;
 
 init();
